@@ -680,7 +680,7 @@
     const CELL = 40;
     let W=0,H=0,DPR=1,cols=0,rows=0;
     let mx=-999,my=-999,moved=false;
-    let pellets=[], score=0, best=0, flash=0, scatterUntil=0;
+    let pellets=[], score=0, best=0, flash=0, flashX=0, flashY=0, scatterUntil=0;
     const corners = ()=>[[1,1],[cols-2,1],[1,rows-2],[cols-2,rows-2]];
 
     const center = i => i*CELL + CELL/2;
@@ -702,11 +702,32 @@
 
     function resetEntities(){
       pac = mk(2,2,'#FFD93B',105,'pac');
+      pac.dead=false; pac.meltT=0; pac.deathX=0; pac.deathY=0;
       ghosts = [
-        mk(cols-3,2,'rgb(255,46,136)',86,'ghost'),
-        mk(2,rows-3,'rgb(139,108,255)',82,'ghost'),
-        mk(cols-3,rows-3,'rgb(31,227,255)',78,'ghost')
+        mk(cols-3,2,'rgb(255,46,136)',88,'ghost'),
+        mk(2,rows-3,'rgb(139,108,255)',84,'ghost'),
+        mk(cols-3,rows-3,'rgb(31,227,255)',80,'ghost')
       ];
+    }
+
+    function nearestPellet(e){
+      let bd=Infinity, b=null;
+      for(const p of pellets){
+        const d=(p[0]-e.cx)*(p[0]-e.cx)+(p[1]-e.cy)*(p[1]-e.cy);
+        if(d<bd){bd=d;b=p;}
+      }
+      return b;
+    }
+    // 고스트에게서 가장 먼 코너로 리스폰
+    function respawnPac(){
+      const cs=corners(); let pick=cs[0], bd=-1;
+      for(const c of cs){
+        let md=Infinity;
+        for(const g of ghosts) md=Math.min(md,(g.cx-c[0])*(g.cx-c[0])+(g.cy-c[1])*(g.cy-c[1]));
+        if(md>bd){bd=md;pick=c;}
+      }
+      pac.cx=pick[0]; pac.cy=pick[1]; pac.x=center(pac.cx); pac.y=center(pac.cy);
+      pac.dir=[1,0]; pac.dead=false; pac.meltT=0;
     }
 
     function resize(){
@@ -760,6 +781,30 @@
       ctx.fillStyle=e.color; ctx.shadowColor='rgba(255,217,59,.85)'; ctx.shadowBlur=18; ctx.fill();
       ctx.restore();
     }
+    // 적에게 닿은 팩맨이 녹아 흘러내리며 사라지는 연출 (p: 0→1)
+    function drawMelt(e){
+      const p=Math.min(e.meltT/1.0, 1), a=1-p, r=CELL*0.42;
+      ctx.save(); ctx.translate(e.deathX, e.deathY);
+      // 본체: 옆으로 퍼지고 납작해지며 아래로 가라앉음
+      const sx=1+p*0.7, sy=Math.max(0.07,1-p*1.15), sink=p*r*0.9;
+      ctx.save(); ctx.translate(0,sink); ctx.scale(sx,sy);
+      ctx.beginPath(); ctx.arc(0,0,r,0,7);
+      ctx.fillStyle='rgba(255,210,70,'+(a*0.95)+')';
+      ctx.shadowColor='rgba(255,120,40,'+a+')'; ctx.shadowBlur=20; ctx.fill();
+      ctx.restore();
+      // 흘러내리는 방울들
+      for(let i=0;i<5;i++){
+        const off=(i*1.7)+(e.deathX%3);
+        const dx=Math.cos(off)*r*0.55;
+        const dy=sink + p*r*(1.0+(i%3)*0.6);
+        const dr=r*0.2*(1-p*0.6);
+        if(dr<=0) continue;
+        ctx.beginPath(); ctx.arc(dx,dy,dr,0,7);
+        ctx.fillStyle='rgba(255,180,60,'+(a*0.7)+')';
+        ctx.shadowColor='rgba(255,120,40,'+(a*0.8)+')'; ctx.shadowBlur=10; ctx.fill();
+      }
+      ctx.restore();
+    }
     function drawGhost(e){
       const r=CELL*0.40;
       ctx.save(); ctx.translate(e.x,e.y);
@@ -790,7 +835,6 @@
       const dt=Math.min((now-last)/1000,0.05); last=now;
       ctx.clearRect(0,0,W,H);
 
-      const tcx=cellOf(mx), tcy=cellOf(my);
       const scatter = now<scatterUntil;
       const cn = corners();
 
@@ -799,12 +843,10 @@
       const pulse = 0.85 + 0.15*Math.sin(now/280);
       for(const p of pellets){
         const px=center(p[0]), py=center(p[1]);
-        // glow halo
         ctx.beginPath();
         ctx.fillStyle='rgba(31,227,255,.9)';
         ctx.shadowColor='rgba(31,227,255,1)'; ctx.shadowBlur=22*pulse;
         ctx.arc(px,py,4.4*pulse,0,7); ctx.fill();
-        // bright core
         ctx.beginPath();
         ctx.fillStyle='rgba(220,250,255,.95)';
         ctx.shadowBlur=10*pulse;
@@ -812,45 +854,59 @@
       }
       ctx.restore();
 
-      // cursor collects pellets
-      if(moved){
+      // ===== PAC-MAN =====
+      if(pac.dead){
+        // 녹는 중
+        pac.meltT += dt;
+        drawMelt(pac);
+        if(pac.meltT > 1.05){ respawnPac(); scatterUntil=now+900; }
+      } else {
+        // 목표: 커서가 화면에 있으면 커서를 따라감, 아니면 가장 가까운 펠릿
+        let tx, ty;
+        if(scatter){ tx=cn[0][0]; ty=cn[0][1]; }
+        else if(moved){
+          tx = cellOf(mx); ty = cellOf(my);
+        } else {
+          const np = nearestPellet(pac);
+          tx = np?np[0]:pac.cx; ty = np?np[1]:pac.cy;
+        }
+        move(pac, tx, ty, 0.04, dt);
+        drawPac(pac, now/1000);
+
+        // 펠릿 섭취 → 점수
         for(let i=pellets.length-1;i>=0;i--){
           const px=center(pellets[i][0]), py=center(pellets[i][1]);
-          if(Math.hypot(px-mx,py-my) < CELL*0.55){
+          if(Math.hypot(px-pac.x, py-pac.y) < CELL*0.5){
             pellets.splice(i,1); score++; best=Math.max(best,score);
             pellets.push(randCell());
           }
         }
       }
 
-      // update + draw pac
-      if(scatter) move(pac, cn[0][0],cn[0][1], 0, dt);
-      else move(pac, tcx,tcy, 0.05, dt);
-      drawPac(pac, now/1000);
-
-      // ghosts
+      // ===== GHOSTS (팩맨 추격) =====
       ghosts.forEach((g,i)=>{
-        if(scatter) move(g, cn[(i+1)%4][0], cn[(i+1)%4][1], 0, dt);
-        else move(g, tcx,tcy, 0.22, dt);
+        if(scatter || pac.dead) move(g, cn[(i+1)%4][0], cn[(i+1)%4][1], 0, dt);
+        else move(g, pac.cx, pac.cy, 0.18, dt);
         drawGhost(g);
       });
 
-      // catch detection
-      if(moved && !scatter){
-        const all=[pac,...ghosts];
-        for(const e of all){
-          if(Math.hypot(e.x-mx,e.y-my) < CELL*0.55){
-            flash=1; scatterUntil=now+1300; score=0; break;
+      // 충돌: 고스트가 팩맨을 잡으면 녹음
+      if(!pac.dead && !scatter){
+        for(const g of ghosts){
+          if(Math.hypot(g.x-pac.x, g.y-pac.y) < CELL*0.6){
+            pac.dead=true; pac.meltT=0; pac.deathX=pac.x; pac.deathY=pac.y;
+            flash=1; flashX=pac.x; flashY=pac.y; score=0;
+            break;
           }
         }
       }
 
-      // catch flash vignette
+      // 죽음 플래시
       if(flash>0){
         ctx.save();
-        const g=ctx.createRadialGradient(mx,my,0,mx,my,Math.max(W,H)*0.6);
-        g.addColorStop(0,'rgba(255,46,136,'+(flash*0.28)+')');
-        g.addColorStop(1,'rgba(255,46,136,0)');
+        const g=ctx.createRadialGradient(flashX,flashY,0,flashX,flashY,Math.max(W,H)*0.5);
+        g.addColorStop(0,'rgba(255,140,40,'+(flash*0.26)+')');
+        g.addColorStop(1,'rgba(255,140,40,0)');
         ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.restore();
         flash=Math.max(0,flash-dt*1.6);
       }
@@ -861,7 +917,7 @@
         ctx.font="600 11px 'JetBrains Mono',monospace";
         ctx.textAlign='left'; ctx.fillStyle='rgba(157,160,198,.55)';
         const bx=(window.innerWidth>860?100:14);
-        ctx.fillText('PAC·AVOID  SCORE '+score+'   BEST '+best, bx, H-16);
+        ctx.fillText('PAC·EAT  SCORE '+score+'   BEST '+best, bx, H-16);
         ctx.restore();
       }
 
