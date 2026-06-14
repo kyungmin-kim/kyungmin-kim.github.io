@@ -103,6 +103,7 @@
   .wrap > #log{order:4}
   .wrap > #lab{order:5}
   .wrap > #contact{order:6}
+  .wrap > #arcade{order:7}
   .section{padding:130px 7vw;max-width:calc(var(--maxw) + 14vw);margin:0 auto;scroll-margin-top:10px}
   .eyebrow{font-family:'JetBrains Mono';font-size:12px;letter-spacing:3px;color:var(--magenta);
     text-transform:uppercase;margin-bottom:26px;display:flex;align-items:center;gap:12px}
@@ -260,6 +261,44 @@
   .contact p{color:var(--ink-dim);max-width:520px;margin:0 auto 36px;font-size:16px}
   .links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
   .copied{font-family:'JetBrains Mono';font-size:12px;color:var(--green);margin-top:18px;height:16px;letter-spacing:1px}
+
+  /* ===== ARCADE (playable, swappable) ===== */
+  .arcade-intro{color:var(--ink-dim);font-size:15px;max-width:620px;margin-bottom:30px}
+  .arcade-intro strong{color:var(--cyan)}
+  .cab{display:grid;grid-template-columns:1fr 230px;gap:22px;align-items:start}
+  .cab-screen{position:relative;aspect-ratio:16/10;border:1px solid var(--line-2);border-radius:16px;
+    overflow:hidden;background:#04040a;box-shadow:0 0 60px -22px var(--glow-c),0 0 0 6px rgba(11,11,22,.6)}
+  .cab-screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .cab-hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:flex-start;gap:18px;
+    padding:10px 14px;font-family:'JetBrains Mono';font-size:12px;letter-spacing:1px;color:var(--ink-dim);pointer-events:none}
+  .cab-full{position:absolute;top:8px;right:8px;z-index:5;width:32px;height:32px;border-radius:8px;
+    border:1px solid var(--line-2);background:rgba(11,11,22,.65);color:var(--ink-dim);
+    font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+  .cab-full:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 16px -4px var(--glow-c)}
+  .cab-screen:fullscreen,.cab-screen:-webkit-full-screen{width:100vw;height:100vh;aspect-ratio:auto;border-radius:0;border:none}
+  .cab-screen.pseudo-full{position:fixed;inset:0;z-index:9999;width:100vw;height:100vh;aspect-ratio:auto;border-radius:0;border:none}
+  .cab-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;background:radial-gradient(circle at 50% 40%,rgba(3,3,8,.45),rgba(3,3,8,.78));backdrop-filter:blur(2px);text-align:center;padding:20px}
+  .cab-overlay.hidden{display:none}
+  .cab-title{font-family:'Chakra Petch';font-weight:700;font-size:clamp(22px,3vw,32px);letter-spacing:1px;
+    color:var(--cyan);text-shadow:0 0 18px var(--glow-c)}
+  .cab-msg{font-family:'JetBrains Mono';font-size:13px;color:var(--magenta);min-height:16px;letter-spacing:1px}
+  .cab-hint{font-family:'JetBrains Mono';font-size:11px;color:var(--muted);letter-spacing:.5px}
+  .cab-carts{display:flex;flex-direction:column;gap:10px}
+  .cab-carts-label{font-family:'JetBrains Mono';font-size:11px;letter-spacing:2px;color:var(--magenta);text-transform:uppercase}
+  .cart-list{display:flex;flex-direction:column;gap:8px}
+  .cart{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;background:var(--panel-hi);cursor:pointer;transition:.22s;text-align:left}
+  .cart:hover{border-color:var(--line-2);transform:translateX(2px)}
+  .cart.active{border-color:var(--cyan);box-shadow:0 0 24px -10px var(--glow-c)}
+  .cart.locked{opacity:.5;cursor:not-allowed}
+  .cart .cart-name{font-family:'Chakra Petch';font-weight:600;font-size:15px;color:var(--ink)}
+  .cart.active .cart-name{color:var(--cyan)}
+  .cart .cart-desc{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);letter-spacing:.3px}
+  .cab-note{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);line-height:1.6;margin-top:4px}
+  .cab-note code{color:var(--cyan)}
+  @media(max-width:860px){ .cab{grid-template-columns:1fr} .cab-carts{flex-direction:column} }
+
   footer{margin-left:var(--rail);border-top:1px solid var(--line);padding:24px 7vw;
     font-family:'JetBrains Mono';font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;position:relative;z-index:2}
 
@@ -308,6 +347,7 @@
     <a class="nlink" href="#log"><span class="num">04</span><span class="dot"></span><span class="lbl">Log</span></a>
     <a class="nlink" href="#lab"><span class="num">05</span><span class="dot"></span><span class="lbl">Lab</span></a>
     <a class="nlink" href="#contact"><span class="num">06</span><span class="dot"></span><span class="lbl">Link</span></a>
+    <a class="nlink" href="#arcade"><span class="num">07</span><span class="dot"></span><span class="lbl">Play</span></a>
   </div>
   <div class="hud">
     <div><span class="st"><span class="live"></span>ONLINE</span></div>
@@ -526,6 +566,30 @@
     <div class="copied" id="copied"></div>
   </section>
 
+  <!-- ARCADE (playable, swappable cartridges) -->
+  <section class="section reveal" id="arcade">
+    <div class="eyebrow">07 — Arcade</div>
+    <p class="arcade-intro">배경의 미니게임을 직접 플레이하세요. <strong>카트리지</strong>를 바꾸면 다른 게임으로 — 나중에 새 게임을 끼워 넣을 수 있게 모듈식으로 만들었습니다.</p>
+    <div class="cab">
+      <div class="cab-screen" id="cabScreen">
+        <canvas id="arcadeCanvas"></canvas>
+        <div class="cab-hud"><span id="arcadeScore">SCORE 0</span><span id="arcadeBest">BEST 0</span></div>
+        <button class="cab-full" id="arcadeFull" title="전체화면 (Esc 종료)" aria-label="전체화면">&#9974;</button>
+        <div class="cab-overlay" id="arcadeOverlay">
+          <div class="cab-title" id="arcadeTitle">PAC·RUN</div>
+          <div class="cab-msg" id="arcadeMsg"></div>
+          <button class="btn prime" id="arcadeStart">▶ PLAY</button>
+          <div class="cab-hint" id="arcadeHint">← → · 드래그 · 기기 기울기</div>
+        </div>
+      </div>
+      <aside class="cab-carts">
+        <div class="cab-carts-label">// CARTRIDGE</div>
+        <div class="cart-list" id="cartList"></div>
+        <div class="cab-note">새 게임은 <code>Arcade.register()</code>로 추가됩니다.</div>
+      </aside>
+    </div>
+  </section>
+
 </div>
 
 <footer>
@@ -535,7 +599,7 @@
 
 <nav class="mnav" aria-label="섹션 네비게이션">
   <a href="#intro">00</a><a href="#about">01</a><a href="#career">02</a><a href="#work">03</a>
-  <a href="#log">04</a><a href="#lab">05</a><a href="#contact">06</a>
+  <a href="#log">04</a><a href="#lab">05</a><a href="#contact">06</a><a href="#arcade">07</a>
 </nav>
 
 <script>
@@ -940,7 +1004,7 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
   });
 
   /* scroll-spy */
-  const ids = ['intro','about','career','work','log','lab','contact'];
+  const ids = ['intro','about','career','work','log','lab','contact','arcade'];
   const links = [...document.querySelectorAll('.rail .nlink')];
   const mlinks = [...document.querySelectorAll('.mnav a')];
   const setActive = (id)=>{
@@ -993,6 +1057,240 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
     sync();
     window.addEventListener('resize', sync);
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(sync); // 웹폰트 로드 후 재측정
+  })();
+</script>
+
+<script>
+  /* =====================================================================
+     ARCADE — 교체형(카트리지) 미니게임 호스트.
+     새 게임 추가:  Arcade.register({ id, name, desc, hint,
+        init(api,w,h), reset(), resize(w,h), update(dt,input,api), render(ctx,api) })
+       input.x / input.y : -1..1 아날로그(키/포인터/기울기)
+       input.dir         : 'L'|'R'|'U'|'D' 이벤트 큐(프레임마다 소비)
+       api.addScore(n) / api.gameOver(msg) / api.W / api.H
+  ===================================================================== */
+  (function(){
+    const cv=document.getElementById('arcadeCanvas'); if(!cv) return;
+    const ctx=cv.getContext('2d');
+    const overlay=document.getElementById('arcadeOverlay');
+    const titleEl=document.getElementById('arcadeTitle'), msgEl=document.getElementById('arcadeMsg');
+    const hintEl=document.getElementById('arcadeHint'), startBtn=document.getElementById('arcadeStart');
+    const scoreEl=document.getElementById('arcadeScore'), bestEl=document.getElementById('arcadeBest');
+    const cartList=document.getElementById('cartList');
+
+    let W=0,H=0,DPR=1, games=[], current=null, running=false, last=0, rafOn=false, visible=true;
+    const input={ x:0, y:0, dir:[] };
+    const api={
+      get W(){return W;}, get H(){return H;}, score:0,
+      addScore(n){ this.score+=n; if(current) current._best=Math.max(current._best||0,this.score); hud(); },
+      gameOver(m){ running=false; showOverlay(true, m||'GAME OVER'); }
+    };
+    function hud(){ scoreEl.textContent='SCORE '+api.score; bestEl.textContent='BEST '+((current&&current._best)||0); }
+
+    function resize(){
+      DPR=Math.min(devicePixelRatio||1,2);
+      const r=cv.getBoundingClientRect(); W=Math.max(1,r.width); H=Math.max(1,r.height);
+      cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+      if(current&&current.resize) current.resize(W,H,api);
+    }
+    function showOverlay(show,msg){
+      overlay.classList.toggle('hidden',!show);
+      if(show){ msgEl.textContent=msg||''; startBtn.textContent=msg?'↻ RETRY':'▶ PLAY'; }
+    }
+    function loadCart(g){
+      current=g; api.score=0; hud();
+      titleEl.textContent=g.name; hintEl.textContent=g.hint||'';
+      if(g.init) g.init(api,W,H);
+      running=false; showOverlay(true,''); renderCartList();
+    }
+    function startGame(){
+      if(!current) return;
+      api.score=0; if(current.reset) current.reset(); input.dir.length=0; hud();
+      showOverlay(false); running=true; last=performance.now();
+      if(!rafOn){ rafOn=true; requestAnimationFrame(draw); }
+    }
+    function draw(now){
+      const dt=Math.min((now-last)/1000,0.05); last=now;
+      ctx.clearRect(0,0,W,H);
+      if(current){ if(running) current.update(dt,input,api); current.render(ctx,api); }
+      input.dir.length=0;
+      if(visible){ requestAnimationFrame(draw); } else { rafOn=false; }
+    }
+    function renderCartList(){
+      cartList.innerHTML=games.map(g=>
+        '<button class="cart'+(g===current?' active':'')+(g.locked?' locked':'')+'" data-id="'+g.id+'"'+(g.locked?' disabled':'')+'>'+
+        '<span class="cart-name">'+g.name+'</span><span class="cart-desc">'+(g.desc||'')+'</span></button>').join('');
+      cartList.querySelectorAll('.cart').forEach(b=>b.addEventListener('click',()=>{
+        const g=games.find(x=>x.id===b.dataset.id); if(g&&!g.locked&&g!==current) loadCart(g);
+      }));
+    }
+
+    /* ---------- 입력 ---------- */
+    const keys={};
+    function axis(){ input.x=((keys.ArrowRight||keys.KeyD)?1:0)-((keys.ArrowLeft||keys.KeyA)?1:0);
+                     input.y=((keys.ArrowDown||keys.KeyS)?1:0)-((keys.ArrowUp||keys.KeyW)?1:0); }
+    window.addEventListener('keydown',e=>{
+      if(!visible) return; const k=e.code;
+      if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD','KeyW','KeyS','Space'].indexOf(k)<0) return;
+      if(running) e.preventDefault();
+      if(!keys[k]){
+        if(k==='ArrowLeft'||k==='KeyA') input.dir.push('L');
+        else if(k==='ArrowRight'||k==='KeyD') input.dir.push('R');
+        else if(k==='ArrowUp'||k==='KeyW') input.dir.push('U');
+        else if(k==='ArrowDown'||k==='KeyS') input.dir.push('D');
+        else if(k==='Space' && !running) startGame();
+      }
+      keys[k]=true; axis();
+    });
+    window.addEventListener('keyup',e=>{ if(keys[e.code]){ keys[e.code]=false; axis(); } });
+
+    let sx=0,sy=0,swiped=false;
+    const rel=(c,a,b)=>(c-a)/Math.max(1,b);
+    function pointer(cx_,cy_){ const r=cv.getBoundingClientRect();
+      input.x=(rel(cx_,r.left,r.width)-0.5)*2; input.y=(rel(cy_,r.top,r.height)-0.5)*2; }
+    cv.addEventListener('mousemove',e=>{ if(running) pointer(e.clientX,e.clientY); });
+    cv.addEventListener('mousedown',()=>{ if(!running) startGame(); });
+    cv.addEventListener('touchstart',e=>{ const t=e.touches[0]; sx=t.clientX; sy=t.clientY; swiped=false;
+      if(running) pointer(t.clientX,t.clientY); },{passive:true});
+    cv.addEventListener('touchmove',e=>{ const t=e.touches[0]; if(!running) return;
+      pointer(t.clientX,t.clientY);
+      const dx=t.clientX-sx, dy=t.clientY-sy;
+      if(!swiped && Math.hypot(dx,dy)>24){ swiped=true;
+        input.dir.push(Math.abs(dx)>Math.abs(dy)?(dx>0?'R':'L'):(dy>0?'D':'U')); } },{passive:true});
+    cv.addEventListener('touchend',()=>{ if(!running) startGame(); },{passive:true});
+
+    let tiltBase=null;
+    window.addEventListener('deviceorientation',e=>{ if(e.gamma==null||!running) return;
+      if(tiltBase==null) tiltBase=e.gamma; input.x=Math.max(-1,Math.min(1,(e.gamma-tiltBase)/30)); },{passive:true});
+    startBtn.addEventListener('click',()=>{ tiltBase=null;
+      const DOE=window.DeviceOrientationEvent;
+      if(DOE&&typeof DOE.requestPermission==='function') DOE.requestPermission().catch(()=>{});
+      startGame(); });
+
+    const io=new IntersectionObserver(es=>es.forEach(e=>{ visible=e.isIntersecting;
+      if(visible){ resize(); if(!rafOn){ rafOn=true; last=performance.now(); requestAnimationFrame(draw); } }
+    }),{threshold:0.12});
+    io.observe(cv);
+    window.addEventListener('resize',resize);
+
+    /* ---------- 전체화면 ---------- */
+    const screenEl=document.getElementById('cabScreen'), fullBtn=document.getElementById('arcadeFull');
+    const isFull=()=>document.fullscreenElement===screenEl||document.webkitFullscreenElement===screenEl||screenEl.classList.contains('pseudo-full');
+    function pseudo(on){ screenEl.classList.toggle('pseudo-full',on); setTimeout(resize,60); }
+    function enterFull(){ const el=screenEl;
+      if(el.requestFullscreen){ el.requestFullscreen().catch(()=>pseudo(true)); }
+      else if(el.webkitRequestFullscreen){ el.webkitRequestFullscreen(); }
+      else pseudo(true); }
+    function exitFull(){
+      if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); }
+      else if(document.webkitFullscreenElement && document.webkitExitFullscreen){ document.webkitExitFullscreen(); }
+      if(screenEl.classList.contains('pseudo-full')) pseudo(false); }
+    if(fullBtn) fullBtn.addEventListener('click',()=>{ isFull()?exitFull():enterFull(); });
+    document.addEventListener('fullscreenchange',()=>setTimeout(resize,60));
+    document.addEventListener('webkitfullscreenchange',()=>setTimeout(resize,60));
+    window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&screenEl.classList.contains('pseudo-full')) pseudo(false); });
+
+    window.Arcade={ register(g){ games.push(g); renderCartList(); } };
+
+    /* ================= 카트리지 1 : PAC·RUN (1인칭 레인 러너) ================= */
+    function drawGhost(g,x,y,r,color){
+      g.save(); g.translate(x,y); g.shadowColor=color; g.shadowBlur=12;
+      g.beginPath(); g.arc(0,-r*0.12,r,Math.PI,0); g.lineTo(r,r*0.72);
+      const ft=4,sp=2*r; for(let i=0;i<ft;i++){ const x1=r-(i+0.5)*(sp/ft),x2=r-(i+1)*(sp/ft); g.lineTo(x1,r*0.45); g.lineTo(x2,r*0.72); }
+      g.lineTo(-r,-r*0.12); g.closePath(); g.fillStyle=color; g.fill(); g.shadowBlur=0;
+      const ex=r*0.34,ey=-r*0.12,er=r*0.26; for(const s of [-ex,ex]){
+        g.beginPath(); g.fillStyle='#fff'; g.arc(s,ey,er,0,7); g.fill();
+        g.beginPath(); g.fillStyle='#0b0b16'; g.arc(s,ey+er*0.25,er*0.5,0,7); g.fill(); }
+      g.restore();
+    }
+    function PacRun(){
+      const FOV=320,CAMH=220,FAR=2600,ZNEAR=70,ZHIT=200,LANE=460,APPROACH=640,CATCH=150;
+      const GC=['#FF2E88','#8B6CFF','#1FE3FF'];
+      let px=0,objs=[],spawnT=0,t=0,f=1,horizon=0,cx=0,Wc=0;
+      const fit=(w,h)=>{ f=h/600; horizon=h*0.44; cx=w/2; Wc=w; };
+      const proj=(x,z,hh)=>({sx:cx+(x-px)*FOV/z*f, sy:horizon+(CAMH-hh)*FOV/z*f, s:FOV/z*f});
+      const spawn=()=>{ const ln=(Math.random()*2-1)*LANE;
+        objs.push(Math.random()<0.26?{x:ln,z:FAR,g:true,c:GC[(Math.random()*3)|0],k:false}:{x:ln,z:FAR,g:false,k:false}); };
+      return { id:'pac-run', name:'PAC·RUN', desc:'레인 러너 · 펠릿 먹고 고스트 회피', hint:'← → · 드래그 · 기기 기울기',
+        init(api,w,h){ fit(w,h); this.reset(); }, resize(w,h){ fit(w,h); },
+        reset(){ px=0; objs=[]; spawnT=0; },
+        update(dt,input,api){ t+=dt;
+          const tx=Math.max(-1,Math.min(1,input.x))*LANE; px+=(tx-px)*Math.min(1,dt*6);
+          spawnT-=dt; if(spawnT<=0){ spawn(); spawnT=0.5+Math.random()*0.4; }
+          for(const o of objs) o.z-=APPROACH*dt;
+          for(const o of objs){ if(!o.k && o.z<=ZHIT){ o.k=true; const al=Math.abs(o.x-px)<CATCH;
+            if(o.g&&al) return api.gameOver('GHOST HIT'); if(!o.g&&al){ api.addScore(1); o.dead=true; } } }
+          objs=objs.filter(o=>o.z>ZNEAR&&!o.dead);
+        },
+        render(g,api){ const w=api.W,h=api.H;
+          g.fillStyle='#04040a'; g.fillRect(0,0,w,h);
+          const sp=60, off=(t*APPROACH)%sp;
+          for(let i=0;i<60;i++){ let z=i*sp-off; if(z<1)continue; if(z>FAR)break;
+            const y=horizon+CAMH*FOV/z*f, fd=Math.max(0,1-z/FAR), hw=(FOV*12*sp*0.5)/z*f;
+            g.strokeStyle='rgba(31,227,255,'+(fd*fd*0.4).toFixed(3)+')'; g.lineWidth=fd*1.2+0.3;
+            g.beginPath(); g.moveTo(cx-hw,y); g.lineTo(cx+hw,y); g.stroke(); }
+          for(let c=-12;c<=12;c++){ const wx=c*sp;
+            g.strokeStyle=Math.abs(c)<1?'rgba(255,46,136,.5)':'rgba(31,227,255,.12)'; g.lineWidth=Math.abs(c)<1?1.3:0.7;
+            g.beginPath(); g.moveTo(cx+(wx-px)*FOV/ZNEAR*f, horizon+CAMH*FOV/ZNEAR*f);
+            g.lineTo(cx+(wx-px)*FOV/FAR*f, horizon+CAMH*FOV/FAR*f); g.stroke(); }
+          g.fillStyle='rgba(31,227,255,.25)'; g.fillRect(0,horizon-1,w,2);
+          objs.slice().sort((a,b)=>b.z-a.z).forEach(o=>{
+            if(o.g){ const b=proj(o.x,o.z,0), gh=130*b.s; drawGhost(g,b.sx,b.sy-gh*0.5,gh*0.42,o.c); }
+            else { const p=proj(o.x,o.z,42), r=Math.max(1,16*p.s);
+              g.beginPath(); g.fillStyle='rgba(31,227,255,.9)'; g.shadowColor='rgba(31,227,255,1)'; g.shadowBlur=Math.min(24,r*1.5);
+              g.arc(p.sx,p.sy,r,0,7); g.fill();
+              g.beginPath(); g.fillStyle='rgba(220,250,255,.95)'; g.shadowBlur=r*0.7; g.arc(p.sx,p.sy,r*0.4,0,7); g.fill(); g.shadowBlur=0; } });
+          const sHit=FOV/ZHIT*f, ry=horizon+(CAMH-42)*sHit, rr=Math.max(13,26*f);
+          const m=0.06+((Math.sin(t*8)+1)/2)*0.3, mc=-Math.PI/2;
+          g.beginPath(); g.moveTo(w/2,ry); g.arc(w/2,ry,rr,mc+m*Math.PI,mc+(2-m)*Math.PI); g.closePath();
+          g.lineWidth=2.4; g.strokeStyle='rgba(255,217,59,.92)'; g.shadowColor='rgba(255,200,60,.9)'; g.shadowBlur=10; g.stroke(); g.shadowBlur=0;
+        } };
+    }
+
+    /* ================= 카트리지 2 : GRID·SNAKE (네온 스네이크) ================= */
+    function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y);
+      g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+    function Snake(){
+      let cell=20,cols=0,rows=0,ox=0,oy=0,Wc=0,Hc=0;
+      let snake=[],dir={x:1,y:0},pend={x:1,y:0},food=null,acc=0,step=0.13;
+      const fit=(w,h)=>{ Wc=w; Hc=h; cell=Math.max(14,Math.round(h/18));
+        cols=Math.floor(w/cell); rows=Math.floor(h/cell); ox=((w-cols*cell)/2)|0; oy=((h-rows*cell)/2)|0; };
+      const place=()=>{ for(let i=0;i<400;i++){ const fx=(Math.random()*cols)|0, fy=(Math.random()*rows)|0;
+        if(!snake.some(s=>s.x===fx&&s.y===fy)){ food={x:fx,y:fy}; return; } } };
+      return { id:'grid-snake', name:'GRID·SNAKE', desc:'네온 스네이크 · 점 먹고 성장', hint:'← ↑ → ↓ · 스와이프',
+        init(api,w,h){ fit(w,h); this.reset(); }, resize(w,h){ fit(w,h); if(!snake.length) this.reset(); },
+        reset(){ fit(Wc,Hc); const a=(cols/2)|0,b=(rows/2)|0;
+          snake=[{x:a,y:b},{x:a-1,y:b},{x:a-2,y:b}]; dir={x:1,y:0}; pend={x:1,y:0}; acc=0; step=0.13; place(); },
+        update(dt,input,api){
+          while(input.dir.length){ const d=input.dir.shift();
+            const nd=d==='L'?{x:-1,y:0}:d==='R'?{x:1,y:0}:d==='U'?{x:0,y:-1}:{x:0,y:1};
+            if(nd.x!==-dir.x||nd.y!==-dir.y) pend=nd; }
+          acc+=dt; if(acc<step) return; acc=0; dir=pend;
+          const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+          if(head.x<0||head.y<0||head.x>=cols||head.y>=rows||snake.some(s=>s.x===head.x&&s.y===head.y)) return api.gameOver('CRASH');
+          snake.unshift(head);
+          if(food&&head.x===food.x&&head.y===food.y){ api.addScore(1); step=Math.max(0.06,step*0.96); place(); }
+          else snake.pop();
+        },
+        render(g,api){ const w=api.W,h=api.H;
+          g.fillStyle='#04040a'; g.fillRect(0,0,w,h);
+          g.strokeStyle='rgba(31,227,255,.06)'; g.lineWidth=1;
+          for(let i=0;i<=cols;i++){ g.beginPath(); g.moveTo(ox+i*cell,oy); g.lineTo(ox+i*cell,oy+rows*cell); g.stroke(); }
+          for(let j=0;j<=rows;j++){ g.beginPath(); g.moveTo(ox,oy+j*cell); g.lineTo(ox+cols*cell,oy+j*cell); g.stroke(); }
+          if(food){ const fx=ox+food.x*cell+cell/2, fy=oy+food.y*cell+cell/2;
+            g.beginPath(); g.fillStyle='#FF2E88'; g.shadowColor='#FF2E88'; g.shadowBlur=14; g.arc(fx,fy,cell*0.32,0,7); g.fill(); g.shadowBlur=0; }
+          for(let i=snake.length-1;i>=0;i--){ const s=snake[i], x=ox+s.x*cell, y=oy+s.y*cell, tt=i/Math.max(1,snake.length);
+            if(i===0){ g.fillStyle='#EAFBFF'; g.shadowColor='#1FE3FF'; g.shadowBlur=12; }
+            else { g.fillStyle='rgba(31,227,255,'+(0.9-0.5*tt).toFixed(3)+')'; g.shadowBlur=0; }
+            roundRect(g,x+1.5,y+1.5,cell-3,cell-3,4); g.fill(); }
+          g.shadowBlur=0;
+        } };
+    }
+
+    /* 등록 + 부팅 */
+    games.push(PacRun(), Snake());
+    resize(); loadCart(games[0]);
+    rafOn=true; requestAnimationFrame(draw);
   })();
 </script>
 </body>
