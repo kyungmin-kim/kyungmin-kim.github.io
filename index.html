@@ -265,7 +265,7 @@
   /* ===== ARCADE (playable, swappable) ===== */
   .arcade-intro{color:var(--ink-dim);font-size:15px;max-width:620px;margin-bottom:30px}
   .arcade-intro strong{color:var(--cyan)}
-  .cab{display:grid;grid-template-columns:1fr 230px;gap:22px;align-items:start}
+  .cab{display:flex;flex-direction:column;gap:18px}
   .cab-screen{position:relative;aspect-ratio:16/10;border:1px solid var(--line-2);border-radius:16px;
     overflow:hidden;background:#04040a;box-shadow:0 0 60px -22px var(--glow-c),0 0 0 6px rgba(11,11,22,.6)}
   .cab-screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -286,10 +286,10 @@
   .cab-hint{font-family:'JetBrains Mono';font-size:11px;color:var(--muted);letter-spacing:.5px}
   .cab-carts{display:flex;flex-direction:column;gap:10px}
   .cab-carts-label{font-family:'JetBrains Mono';font-size:11px;letter-spacing:2px;color:var(--magenta);text-transform:uppercase}
-  .cart-list{display:flex;flex-direction:column;gap:8px}
+  .cart-list{display:flex;flex-direction:row;flex-wrap:wrap;gap:10px}
   .cart{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-radius:10px;
-    padding:12px 14px;background:var(--panel-hi);cursor:pointer;transition:.22s;text-align:left}
-  .cart:hover{border-color:var(--line-2);transform:translateX(2px)}
+    padding:12px 14px;background:var(--panel-hi);cursor:pointer;transition:.22s;text-align:left;flex:1 1 200px;min-width:170px}
+  .cart:hover{border-color:var(--line-2);transform:translateY(-2px)}
   .cart.active{border-color:var(--cyan);box-shadow:0 0 24px -10px var(--glow-c)}
   .cart.locked{opacity:.5;cursor:not-allowed}
   .cart .cart-name{font-family:'Chakra Petch';font-weight:600;font-size:15px;color:var(--ink)}
@@ -297,7 +297,7 @@
   .cart .cart-desc{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);letter-spacing:.3px}
   .cab-note{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);line-height:1.6;margin-top:4px}
   .cab-note code{color:var(--cyan)}
-  @media(max-width:860px){ .cab{grid-template-columns:1fr} .cab-carts{flex-direction:column} }
+  @media(max-width:560px){ .cart{flex:1 1 100%} }
 
   footer{margin-left:var(--rail);border-top:1px solid var(--line);padding:24px 7vw;
     font-family:'JetBrains Mono';font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;position:relative;z-index:2}
@@ -569,7 +569,7 @@
   <!-- ARCADE (playable, swappable cartridges) -->
   <section class="section reveal" id="arcade">
     <div class="eyebrow">07 — Arcade</div>
-    <p class="arcade-intro">배경의 미니게임을 직접 플레이하세요. <strong>카트리지</strong>를 바꾸면 다른 게임으로 — 나중에 새 게임을 끼워 넣을 수 있게 모듈식으로 만들었습니다.</p>
+    <p class="arcade-intro">배경의 미니게임을 직접 플레이하세요. <strong>카트리지</strong>를 바꿔 플레이할 수 있습니다.                </p>
     <div class="cab">
       <div class="cab-screen" id="cabScreen">
         <canvas id="arcadeCanvas"></canvas>
@@ -819,19 +819,26 @@
       ctx.restore();
     }
 
-    // 1인칭 팩맨 — 음영 없이 아웃라인만. 입을 위로 벌려 다가오는 오브젝트를 먹는다
+    // 1인칭 조준 크로스헤어 — 다가오는 오브젝트가 수렴하는 지점
     function drawReticle(now){
-      const sHit=FOV/ZHIT, ry=horizon+(CAM_H-42)*sHit, r=30;
-      const wave=(Math.sin(now/110)+1)/2;
-      const m=0.05+wave*0.28+chomp*0.16;          // 입 벌림(π 비율)
-      const mc=-Math.PI/2;                         // 입이 화면 위쪽을 향함
+      const sHit=FOV/ZHIT, ry=horizon+(CAM_H-42)*sHit;
+      const R=22+chomp*4, gap=7;
       ctx.save(); ctx.translate(W/2, ry);
-      ctx.beginPath(); ctx.moveTo(0,0);
-      ctx.arc(0,0,r, mc+m*Math.PI, mc+(2-m)*Math.PI); ctx.closePath();
-      ctx.lineWidth=2.4;
-      ctx.strokeStyle='rgba(255,217,59,'+(0.6+0.4*chomp)+')';
-      ctx.shadowColor='rgba(255,200,60,.9)'; ctx.shadowBlur=10+chomp*16;
+      ctx.lineCap='round';
+      ctx.strokeStyle='rgba(31,227,255,'+(0.21+0.1*chomp).toFixed(3)+')';
+      ctx.shadowColor='rgba(31,227,255,.27)'; ctx.shadowBlur=8+chomp*16;
+      // 십자 눈금(중앙 갭)
+      ctx.lineWidth=2.2;
+      ctx.beginPath();
+      ctx.moveTo(0,-gap); ctx.lineTo(0,-R); ctx.moveTo(0,gap); ctx.lineTo(0,R);
+      ctx.moveTo(-gap,0); ctx.lineTo(-R,0); ctx.moveTo(gap,0); ctx.lineTo(R,0);
       ctx.stroke();
+      // 조준 링
+      ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.arc(0,0,R*0.52,0,7); ctx.stroke();
+      // 중심 점
+      ctx.beginPath(); ctx.fillStyle='rgba(220,250,255,'+(0.28+0.12*chomp).toFixed(3)+')';
+      ctx.shadowBlur=6; ctx.arc(0,0,2,0,7); ctx.fill();
       ctx.restore();
     }
 
@@ -1174,27 +1181,44 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
       g.restore();
     }
     function PacRun(){
-      const FOV=320,CAMH=220,FAR=2600,ZNEAR=70,ZHIT=200,LANE=460,APPROACH=640,CATCH=150;
+      const FOV=320,CAMH=220,FAR=2600,ZNEAR=70,ZHIT=200,LANE=460,APPROACH=560;
+      const DEATH_T=0.95;       // 죽는 모션 길이(초)
+      const ITEM_PROB=0.09;     // 스폰 시 아이템일 확률
       const GC=['#FF2E88','#8B6CFF','#1FE3FF'];
-      let px=0,objs=[],spawnT=0,t=0,f=1,horizon=0,cx=0,Wc=0;
+      let px=0,objs=[],spawnT=0,t=0,f=1,horizon=0,cx=0,Wc=0,dying=false,dyingT=0,slowMul=1,clearFx=0,gridOff=0;
       const fit=(w,h)=>{ f=h/600; horizon=h*0.44; cx=w/2; Wc=w; };
       const proj=(x,z,hh)=>({sx:cx+(x-px)*FOV/z*f, sy:horizon+(CAMH-hh)*FOV/z*f, s:FOV/z*f});
-      const spawn=()=>{ const ln=(Math.random()*2-1)*LANE;
-        objs.push(Math.random()<0.26?{x:ln,z:FAR,g:true,c:GC[(Math.random()*3)|0],k:false}:{x:ln,z:FAR,g:false,k:false}); };
-      return { id:'pac-run', name:'PAC·RUN', desc:'레인 러너 · 펠릿 먹고 고스트 회피', hint:'← → · 드래그 · 기기 기울기',
+      const speedMul=()=>Math.pow(1.001, t);     // 1초당 +0.1% 가속(복리)
+      const ghostMul=()=>Math.pow(2,   t/60);   // 1분당 고스트 빈도 2배
+      const spawn=()=>{ const ln=(Math.random()*2-1)*LANE, r=Math.random();
+        const gp=Math.min(0.72, 0.24*ghostMul());
+        if(r<ITEM_PROB){ objs.push({x:ln,z:FAR,kind:(Math.random()<0.28?'slow':'clear'),k:false}); }
+        else if(r<ITEM_PROB+gp){ objs.push({x:ln,z:FAR,g:true,c:GC[(Math.random()*3)|0],k:false}); }
+        else { objs.push({x:ln,z:FAR,g:false,k:false}); } };
+      const rad=()=>Math.max(13,26*f);
+      const reticleY=()=>horizon+(CAMH-42)*(FOV/ZHIT*f);
+      return { id:'pac-run', name:'PAC·RUN', desc:'레인 러너 · 점점 빨라짐 · 아이템 활용', hint:'← → · 드래그',
         init(api,w,h){ fit(w,h); this.reset(); }, resize(w,h){ fit(w,h); },
-        reset(){ px=0; objs=[]; spawnT=0; },
-        update(dt,input,api){ t+=dt;
+        reset(){ px=0; objs=[]; spawnT=0; t=0; dying=false; dyingT=0; slowMul=1; clearFx=0; gridOff=0; },
+        update(dt,input,api){ t+=dt; if(clearFx>0) clearFx=Math.max(0,clearFx-dt*2);
+          if(dying){ dyingT+=dt; if(dyingT>=DEATH_T) api.gameOver('GHOST HIT'); return; }
+          const spd=APPROACH*speedMul()*slowMul;
           const tx=Math.max(-1,Math.min(1,input.x))*LANE; px+=(tx-px)*Math.min(1,dt*6);
-          spawnT-=dt; if(spawnT<=0){ spawn(); spawnT=0.5+Math.random()*0.4; }
-          for(const o of objs) o.z-=APPROACH*dt;
-          for(const o of objs){ if(!o.k && o.z<=ZHIT){ o.k=true; const al=Math.abs(o.x-px)<CATCH;
-            if(o.g&&al) return api.gameOver('GHOST HIT'); if(!o.g&&al){ api.addScore(1); o.dead=true; } } }
+          spawnT-=dt; if(spawnT<=0){ spawn(); spawnT=(0.5+Math.random()*0.4)/speedMul(); }
+          gridOff+=spd*dt;
+          for(const o of objs) o.z-=spd*dt;
+          const wpx=FOV/ZHIT*f, deathW=rad()/wpx, eatW=deathW*2.2;
+          for(const o of objs){ if(!o.k && o.z<=ZHIT){ o.k=true; const d=Math.abs(o.x-px);
+            if(o.g){ if(d<deathW){ dying=true; dyingT=0; return; } }
+            else if(o.kind){ if(d<eatW){ o.dead=true; api.addScore(2);
+              if(o.kind==='slow'){ slowMul=Math.max(0.75, slowMul/1.5); }
+              else { objs.forEach(x=>{ if(x.g) x.dead=true; }); clearFx=1; } } }
+            else if(d<eatW){ api.addScore(1); o.dead=true; } } }
           objs=objs.filter(o=>o.z>ZNEAR&&!o.dead);
         },
         render(g,api){ const w=api.W,h=api.H;
           g.fillStyle='#04040a'; g.fillRect(0,0,w,h);
-          const sp=60, off=(t*APPROACH)%sp;
+          const sp=60, off=gridOff%sp;
           for(let i=0;i<60;i++){ let z=i*sp-off; if(z<1)continue; if(z>FAR)break;
             const y=horizon+CAMH*FOV/z*f, fd=Math.max(0,1-z/FAR), hw=(FOV*12*sp*0.5)/z*f;
             g.strokeStyle='rgba(31,227,255,'+(fd*fd*0.4).toFixed(3)+')'; g.lineWidth=fd*1.2+0.3;
@@ -1206,14 +1230,37 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
           g.fillStyle='rgba(31,227,255,.25)'; g.fillRect(0,horizon-1,w,2);
           objs.slice().sort((a,b)=>b.z-a.z).forEach(o=>{
             if(o.g){ const b=proj(o.x,o.z,0), gh=130*b.s; drawGhost(g,b.sx,b.sy-gh*0.5,gh*0.42,o.c); }
+            else if(o.kind){ const p=proj(o.x,o.z,42), r=Math.max(3,18*p.s); g.save(); g.translate(p.sx,p.sy);
+              if(o.kind==='slow'){ g.fillStyle='rgba(54,248,154,.92)'; g.shadowColor='#36F89A'; g.shadowBlur=Math.min(28,r*1.6);
+                g.rotate(Math.PI/4); g.fillRect(-r*0.7,-r*0.7,r*1.4,r*1.4); g.rotate(-Math.PI/4);
+                g.shadowBlur=0; g.fillStyle='#04140c'; g.font='bold '+Math.round(r*1.1)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('½',0,0); }
+              else { g.strokeStyle='rgba(255,46,136,.95)'; g.lineWidth=Math.max(2,r*0.22); g.shadowColor='#FF2E88'; g.shadowBlur=Math.min(28,r*1.6);
+                g.beginPath(); g.arc(0,0,r,0,7); g.stroke();
+                g.beginPath(); g.moveTo(-r*0.5,-r*0.5); g.lineTo(r*0.5,r*0.5); g.moveTo(r*0.5,-r*0.5); g.lineTo(-r*0.5,r*0.5); g.stroke(); }
+              g.restore(); }
             else { const p=proj(o.x,o.z,42), r=Math.max(1,16*p.s);
               g.beginPath(); g.fillStyle='rgba(31,227,255,.9)'; g.shadowColor='rgba(31,227,255,1)'; g.shadowBlur=Math.min(24,r*1.5);
               g.arc(p.sx,p.sy,r,0,7); g.fill();
               g.beginPath(); g.fillStyle='rgba(220,250,255,.95)'; g.shadowBlur=r*0.7; g.arc(p.sx,p.sy,r*0.4,0,7); g.fill(); g.shadowBlur=0; } });
-          const sHit=FOV/ZHIT*f, ry=horizon+(CAMH-42)*sHit, rr=Math.max(13,26*f);
-          const m=0.06+((Math.sin(t*8)+1)/2)*0.3, mc=-Math.PI/2;
-          g.beginPath(); g.moveTo(w/2,ry); g.arc(w/2,ry,rr,mc+m*Math.PI,mc+(2-m)*Math.PI); g.closePath();
-          g.lineWidth=2.4; g.strokeStyle='rgba(255,217,59,.92)'; g.shadowColor='rgba(255,200,60,.9)'; g.shadowBlur=10; g.stroke(); g.shadowBlur=0;
+          // 고스트 제거 아이템 플래시
+          if(clearFx>0){ g.save(); const gr=g.createRadialGradient(w/2,horizon,0,w/2,horizon,Math.max(w,h)*0.7);
+            gr.addColorStop(0,'rgba(255,46,136,'+(clearFx*0.3).toFixed(3)+')'); gr.addColorStop(1,'rgba(255,46,136,0)');
+            g.fillStyle=gr; g.fillRect(0,0,w,h); g.restore(); }
+          const ry=reticleY(), rr=rad(), mc=-Math.PI/2;
+          if(dying){
+            const p=Math.min(dyingT/DEATH_T,1), a=1-p, m=0.06+p*0.95;
+            g.save(); g.translate(w/2,ry);
+            g.beginPath(); g.moveTo(0,0); g.arc(0,0,rr, mc+m*Math.PI, mc+(2-m)*Math.PI); g.closePath();
+            g.fillStyle='rgba(255,217,59,'+a.toFixed(3)+')';
+            g.shadowColor='rgba(255,120,40,'+a.toFixed(3)+')'; g.shadowBlur=22; g.fill(); g.shadowBlur=0;
+            g.beginPath(); g.arc(0,0, rr*(1+p*2.0), 0,7);
+            g.strokeStyle='rgba(255,120,40,'+(a*0.6).toFixed(3)+')'; g.lineWidth=2; g.stroke();
+            g.restore();
+          } else {
+            const m=0.06+((Math.sin(t*8)+1)/2)*0.3;
+            g.beginPath(); g.moveTo(w/2,ry); g.arc(w/2,ry,rr,mc+m*Math.PI,mc+(2-m)*Math.PI); g.closePath();
+            g.lineWidth=2.4; g.strokeStyle='rgba(255,217,59,.92)'; g.shadowColor='rgba(255,200,60,.9)'; g.shadowBlur=10; g.stroke(); g.shadowBlur=0;
+          }
         } };
     }
 
