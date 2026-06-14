@@ -575,7 +575,7 @@
     const cv = document.getElementById('gridbg');
     const ctx = cv.getContext('2d');
     const reduceMo = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let W=0, H=0, DPR=1, horizon=0, cx=0;
+    let W=0, H=0, DPR=1, horizon=0, cx=0, baseHorizon=0, baseCx=0;
 
     const CYAN='31,227,255', MAG='255,46,136';
     const FOV = 320;        // 초점 거리(원근 강도)
@@ -584,7 +584,10 @@
     const COLS = 26;        // 좌우 그리드 라인 수(중심 기준 한쪽)
     const FAR = 2600;       // 가장 먼 깊이
     const SPEED = 70;       // 흐름 속도(월드/초)
+    const MAXP = 34;        // 커서 패럴랙스 최대 이동(px)
     let offset = 0, last = performance.now();
+    // 패럴랙스: 커서 위치(mxN,myN) + 휠(wheel) → panX/panY로 부드럽게 추종
+    let mxN=0, myN=0, wheel=0, panX=0, panY=0;
 
     function resize(){
       DPR = Math.min(window.devicePixelRatio||1, 2);
@@ -592,8 +595,9 @@
       cv.width = W*DPR; cv.height = H*DPR;
       cv.style.width = W+'px'; cv.style.height = H+'px';
       ctx.setTransform(DPR,0,0,DPR,0,0);
-      horizon = H*0.46;     // 지평선 위치
-      cx = W/2;
+      baseHorizon = H*0.46; // 지평선 기준 위치
+      baseCx = W/2;
+      horizon = baseHorizon; cx = baseCx;
     }
 
     // 바닥/천장 한 평면의 그리드를 그린다. sign=+1 바닥, -1 천장.
@@ -639,6 +643,14 @@
     function frame(now){
       const dt = Math.min((now-last)/1000, 0.05); last = now;
       offset += SPEED*dt;
+
+      // 패럴랙스: 목표(커서+휠)로 부드럽게 이동, 휠은 서서히 감쇠
+      const tX = mxN*MAXP, tY = myN*MAXP*0.6 + wheel;
+      const ease = Math.min(1, dt*5);
+      panX += (tX-panX)*ease; panY += (tY-panY)*ease;
+      wheel -= wheel*Math.min(1, dt*2.2);
+      cx = baseCx + panX; horizon = baseHorizon + panY;
+
       ctx.clearRect(0,0,W,H);
 
       drawPlane(1);    // 바닥
@@ -663,6 +675,16 @@
     function drawStatic(){ ctx.clearRect(0,0,W,H); drawPlane(1); drawPlane(-1); }
 
     window.addEventListener('resize', ()=>{ resize(); if(reduceMo) drawStatic(); });
+    if(!reduceMo){
+      window.addEventListener('mousemove', e=>{
+        mxN = e.clientX/W - 0.5;   // -0.5 ~ 0.5
+        myN = e.clientY/H - 0.5;
+      }, {passive:true});
+      window.addEventListener('wheel', e=>{
+        wheel = clampW(wheel + e.deltaY*0.06, -70, 70); // 스크롤 방향으로 밀림
+      }, {passive:true});
+    }
+    function clampW(v,a,b){ return Math.max(a,Math.min(b,v)); }
     resize();
     if(reduceMo) drawStatic();
     else requestAnimationFrame(frame);
