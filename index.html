@@ -51,6 +51,8 @@
   }
   /* TRON 3D animated grid canvas */
   #gridbg{position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
+  /* Pac-Man chase mini-game layer (between bg and content) */
+  #pacgame{position:fixed;inset:0;z-index:1;pointer-events:none;display:block}
   .scanline{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.4;
     background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.22) 3px);
     mix-blend-mode:overlay}
@@ -147,6 +149,39 @@
     border:1px solid var(--line-2);border-radius:5px;padding:3px 8px;background:rgba(31,227,255,.06)}
   .t.m{color:var(--magenta);background:rgba(255,46,136,.06)}
   .t.budget{color:var(--green);background:rgba(54,248,154,.07)}
+  /* expandable work card */
+  .card{cursor:pointer;user-select:none}
+  .card-chev{position:absolute;top:22px;right:22px;font-family:'JetBrains Mono';font-size:14px;
+    color:var(--muted);transition:transform .3s,color .25s}
+  .card:hover .card-chev{color:var(--cyan)}
+  .card.open{border-color:var(--line-2);box-shadow:0 0 30px -12px var(--glow-c)}
+  .card.open::after{transform:scaleX(1)}
+  .card.open .card-chev{transform:rotate(90deg);color:var(--cyan)}
+  .card-detail{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
+  .card.open .card-detail{grid-template-rows:1fr}
+  .card-detail > .inner{overflow:hidden}
+  .card-detail-c{border-top:1px solid var(--line);margin-top:18px;padding-top:16px;
+    color:var(--ink-dim);font-size:13.5px;line-height:1.65}
+  .card-detail-c h4{font-family:'Chakra Petch';font-weight:600;color:var(--ink);font-size:14px;
+    margin:14px 0 7px;letter-spacing:.2px}
+  .card-detail-c h4:first-child{margin-top:0}
+  .card-detail-c ul{list-style:none;margin:8px 0}
+  .card-detail-c li{position:relative;padding-left:16px;margin:5px 0}
+  .card-detail-c li::before{content:"▹";position:absolute;left:0;color:var(--cyan)}
+  .card-detail-c strong{color:var(--ink)}
+  /* representative image (above 한 일) */
+  .card-shot{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;
+    border:1px solid var(--line-2);margin:0 0 14px;
+    background:
+      radial-gradient(120% 120% at 0% 0%, rgba(31,227,255,.10), transparent 55%),
+      radial-gradient(120% 120% at 100% 100%, rgba(255,46,136,.10), transparent 55%),
+      linear-gradient(135deg,var(--panel-hi),var(--void-2))}
+  .card-shot::before{content:"";position:absolute;inset:0;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:26px 26px;opacity:.5}
+  .card-shot .shot-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+  .card-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 
   /* ===== DEV LOG ===== */
   .log-intro{color:var(--ink-dim);font-size:15px;max-width:560px;margin-bottom:34px}
@@ -244,6 +279,7 @@
 </head>
 <body>
 <canvas id="gridbg" aria-hidden="true"></canvas>
+<canvas id="pacgame" aria-hidden="true"></canvas>
 <div class="bg-fx"></div>
 <div class="scanline"></div>
 
@@ -315,47 +351,115 @@
   <section class="section reveal" id="work">
     <div class="eyebrow">02 — Selected Work</div>
     <div class="work-grid">
-      <article class="card">
+      <article class="card" role="button" tabindex="0" aria-expanded="false">
+        <span class="card-chev">&#9656;</span>
         <div class="idx">/ 01 · 크래프톤</div>
         <h3>Project ARC</h3>
         <p>이미지 기반 레벨 생성 툴을 제공해, 레벨 디자이너 한 명이 빠르게 이터레이션할 수 있게
           작업 효율을 끌어올렸다. 언리얼 5 절차적 생성 파이프라인을 버티컬 슬라이스 단계에 투입.</p>
         <div class="tags"><span class="t">UE5</span><span class="t m">Procedural</span><span class="t">Level Gen Tool</span><span class="t budget">fast iteration</span></div>
+        <div class="card-detail"><div class="inner"><div class="card-detail-c">
+          <figure class="card-shot"><span class="shot-ph">Project ARC</span>
+            <img src="images/work-01.jpg" alt="Project ARC 대표 이미지" loading="lazy" onerror="this.remove()"></figure>
+          <h4>한 일</h4>
+          <ul>
+            <li>흑백 이미지의 밝기·채널을 <strong>높이/밀도/타입 마스크</strong>로 해석해 어셋을 배치</li>
+            <li>규칙 기반 스캐터(거리·경사·충돌)로 자연스러운 레이아웃 생성</li>
+            <li>디자이너가 이미지만 교체해 <strong>수 초 내</strong> 새 레이아웃 확인</li>
+          </ul>
+          <h4>임팩트</h4>
+          <p>버티컬 슬라이스 단계에서 한 명의 디자이너가 빠르게 이터레이션하는 워크플로우를 확립.</p>
+        </div></div></div>
       </article>
-      <article class="card">
+      <article class="card" role="button" tabindex="0" aria-expanded="false">
+        <span class="card-chev">&#9656;</span>
         <div class="idx">/ 02 · 네오위즈 Round8</div>
         <h3>피의 거짓 / Lies of P</h3>
         <p>이펙트 TA로 머티리얼 제작과 아트 피처 R&amp;D·최적화를 담당. 언리얼 5 신규 프로젝트를
           리딩하며 마스터 머티리얼·오픈월드 환경을 구성하고 PS5 60fps 버티컬 슬라이스까지 지원.</p>
         <div class="tags"><span class="t">UE5</span><span class="t m">Material</span><span class="t">Effect TA</span><span class="t budget">PS5 60fps</span></div>
+        <div class="card-detail"><div class="inner"><div class="card-detail-c">
+          <figure class="card-shot"><span class="shot-ph">Lies of P</span>
+            <img src="images/work-02.jpg" alt="피의 거짓 / Lies of P 대표 이미지" loading="lazy" onerror="this.remove()"></figure>
+          <h4>한 일</h4>
+          <ul>
+            <li><strong>마스터 머티리얼 체계</strong> 설계 및 오픈월드 환경 머티리얼 구성</li>
+            <li>아트 피처 R&amp;D와 <strong>PS5 60fps</strong> 타깃 최적화</li>
+            <li>신규 UE5 프로젝트 이펙트 파트 리딩, 인하우스 파이프라인 지원</li>
+          </ul>
+        </div></div></div>
       </article>
-      <article class="card">
+      <article class="card" role="button" tabindex="0" aria-expanded="false">
+        <span class="card-chev">&#9656;</span>
         <div class="idx">/ 03 · Animal Logic</div>
         <h3>The Magician's Elephant</h3>
         <p>유화 느낌의 FX 셰이더를 제작·배포하고 스타일라이즈드 FX를 구현. 카메라·오브젝트 위치를
           이용해 3D 공간에서 빠르게 연산하는 caustics를 R&amp;D했다. <span style="color:var(--muted)">Netflix</span></p>
         <div class="tags"><span class="t">Houdini</span><span class="t m">FX Shader</span><span class="t">Stylized</span><span class="t">Caustics</span></div>
+        <div class="card-detail"><div class="inner"><div class="card-detail-c">
+          <figure class="card-shot"><span class="shot-ph">The Magician's Elephant</span>
+            <img src="images/work-03.jpg" alt="The Magician's Elephant 대표 이미지" loading="lazy" onerror="this.remove()"></figure>
+          <h4>한 일</h4>
+          <ul>
+            <li>유화 톤의 <strong>스타일라이즈드 FX 셰이더</strong> 제작·스튜디오 배포</li>
+            <li>카메라·오브젝트 위치 기반 <strong>3D caustics 근사</strong> R&amp;D (풀 레이트레이싱 없이)</li>
+            <li>연산 비용을 크게 줄이면서 아트 룩을 유지</li>
+          </ul>
+        </div></div></div>
       </article>
-      <article class="card">
+      <article class="card" role="button" tabindex="0" aria-expanded="false">
+        <span class="card-chev">&#9656;</span>
         <div class="idx">/ 04 · Animal Logic</div>
         <h3>The LEGO Movie 시리즈</h3>
         <p>포인트 기반 군중 시뮬레이션 R&amp;D, 레고 콘셉트를 위한 유체 시뮬레이션의 픽셀화 툴,
           레고 블록용 파괴 시뮬레이션 툴 셋업. <span style="color:var(--muted)">Warner Bros.</span></p>
         <div class="tags"><span class="t">Houdini</span><span class="t m">Crowd Sim</span><span class="t">Fluid</span><span class="t">Destruction</span></div>
+        <div class="card-detail"><div class="inner"><div class="card-detail-c">
+          <figure class="card-shot"><span class="shot-ph">The LEGO Movie</span>
+            <img src="images/work-04.jpg" alt="The LEGO Movie 시리즈 대표 이미지" loading="lazy" onerror="this.remove()"></figure>
+          <h4>한 일</h4>
+          <ul>
+            <li><strong>포인트 기반 군중 시뮬레이션</strong> R&amp;D</li>
+            <li>유체 시뮬을 레고 콘셉트에 맞게 <strong>픽셀화</strong>하는 툴 제작</li>
+            <li>레고 블록 <strong>파괴 시뮬레이션</strong> 툴 셋업</li>
+          </ul>
+        </div></div></div>
       </article>
-      <article class="card">
+      <article class="card" role="button" tabindex="0" aria-expanded="false">
+        <span class="card-chev">&#9656;</span>
         <div class="idx">/ 05 · Flying Bark</div>
         <h3>Marvel's What If…?</h3>
         <p>FX 팀 리드 &amp; TD. Houdini 시뮬레이션을 2D 스타일로 변환하는 디지털에셋을 제작·배포하고,
           라이팅 TD와 USD 파이프라인 데이터 공유를 표준화했다. <span style="color:var(--muted)">Disney+ / Marvel</span></p>
         <div class="tags"><span class="t">Houdini</span><span class="t m">2D Stylize</span><span class="t">USD</span><span class="t budget">Team Lead</span></div>
+        <div class="card-detail"><div class="inner"><div class="card-detail-c">
+          <figure class="card-shot"><span class="shot-ph">Marvel's What If…?</span>
+            <img src="images/work-05.jpg" alt="Marvel's What If…? 대표 이미지" loading="lazy" onerror="this.remove()"></figure>
+          <h4>한 일</h4>
+          <ul>
+            <li>FX 팀 <strong>리드 &amp; TD</strong></li>
+            <li>Houdini 실사 시뮬을 <strong>2D 셀 스타일</strong>로 변환하는 HDA 제작·배포</li>
+            <li>라이팅 TD와 <strong>USD 데이터 공유 표준화</strong></li>
+          </ul>
+        </div></div></div>
       </article>
-      <article class="card">
+      <article class="card" role="button" tabindex="0" aria-expanded="false">
+        <span class="card-chev">&#9656;</span>
         <div class="idx">/ 06 · Luma Pictures</div>
         <h3>Spider-Man: Far From Home</h3>
         <p>베니스·미스테리오 랩 시퀀스 FX 샷 작업. 아트 디렉션이 가능한 거미줄 FX-rig를 만들고,
           Molten Man의 흐르는 용암 캐릭터 FX를 셋업. <span style="color:var(--muted)">Sony / Marvel</span></p>
         <div class="tags"><span class="t">FX-rig</span><span class="t m">Character FX</span><span class="t">Simulation</span><span class="t">VFX Shot</span></div>
+        <div class="card-detail"><div class="inner"><div class="card-detail-c">
+          <figure class="card-shot"><span class="shot-ph">Spider-Man: Far From Home</span>
+            <img src="images/work-06.jpg" alt="Spider-Man: Far From Home 대표 이미지" loading="lazy" onerror="this.remove()"></figure>
+          <h4>한 일</h4>
+          <ul>
+            <li>베니스·미스테리오 랩 <strong>시퀀스 FX 샷</strong> 작업</li>
+            <li>아트 디렉션이 가능한 <strong>거미줄 FX-rig</strong> 개발</li>
+            <li>Molten Man <strong>흐르는 용암 캐릭터 FX</strong> 셋업</li>
+          </ul>
+        </div></div></div>
       </article>
     </div>
   </section>
@@ -564,6 +668,213 @@
   })();
 
   /* =====================================================================
+     PAC-AVOID — 그리드 위에서 커서를 추격하는 팩맨 + 고스트.
+     커서로 펠릿을 모으며 추격자를 피한다. (배경 이스터에그)
+  ===================================================================== */
+  (function(){
+    const reduceMo = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMo) return;
+    const cv = document.getElementById('pacgame');
+    const ctx = cv.getContext('2d');
+    const CELL = 40;
+    let W=0,H=0,DPR=1,cols=0,rows=0;
+    let mx=-999,my=-999,moved=false;
+    let pellets=[], score=0, best=0, flash=0, scatterUntil=0;
+    const corners = ()=>[[1,1],[cols-2,1],[1,rows-2],[cols-2,rows-2]];
+
+    const center = i => i*CELL + CELL/2;
+    const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+    const cellOf = p => clamp(Math.floor(p/CELL),0,1e9);
+
+    // ----- entities -----
+    function mk(cx,cy,color,speed,kind){
+      return {cx,cy,x:center(cx),y:center(cy),dir:[1,0],color,speed,kind};
+    }
+    let pac, ghosts;
+
+    function spawnPellets(){
+      pellets=[];
+      const n = Math.min(46, Math.floor(cols*rows*0.02));
+      for(let i=0;i<n;i++) pellets.push(randCell());
+    }
+    function randCell(){ return [1+Math.floor(Math.random()*(cols-2)), 1+Math.floor(Math.random()*(rows-2))]; }
+
+    function resetEntities(){
+      pac = mk(2,2,'#FFD93B',105,'pac');
+      ghosts = [
+        mk(cols-3,2,'rgb(255,46,136)',86,'ghost'),
+        mk(2,rows-3,'rgb(139,108,255)',82,'ghost'),
+        mk(cols-3,rows-3,'rgb(31,227,255)',78,'ghost')
+      ];
+    }
+
+    function resize(){
+      DPR=Math.min(window.devicePixelRatio||1,2);
+      W=window.innerWidth; H=window.innerHeight;
+      cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+      ctx.setTransform(DPR,0,0,DPR,0,0);
+      cols=Math.ceil(W/CELL); rows=Math.ceil(H/CELL);
+      spawnPellets(); resetEntities();
+    }
+
+    // 목표 셀로 향하는 다음 셀을 그리드에서 선택(직진/직각, 역주행 회피)
+    function pickNext(e, tcx, tcy, rnd){
+      const opts=[[1,0],[-1,0],[0,1],[0,-1]].filter(d=>{
+        const nx=e.cx+d[0], ny=e.cy+d[1];
+        if(nx<0||ny<0||nx>=cols||ny>=rows) return false;
+        if(d[0]===-e.dir[0] && d[1]===-e.dir[1]) return false; // 역주행 금지
+        return true;
+      });
+      const list = opts.length?opts:[[ -e.dir[0],-e.dir[1] ]]; // 막다른 길이면 유턴 허용
+      let pick;
+      if(rnd && Math.random()<rnd){ pick=list[Math.floor(Math.random()*list.length)]; }
+      else{
+        let bd=Infinity;
+        for(const d of list){
+          const nx=e.cx+d[0], ny=e.cy+d[1];
+          const dist=(nx-tcx)*(nx-tcx)+(ny-tcy)*(ny-tcy);
+          if(dist<bd){bd=dist;pick=d;}
+        }
+      }
+      e.dir=pick; e.cx+=pick[0]; e.cy+=pick[1];
+    }
+
+    function move(e, tcx, tcy, rnd, dt){
+      let remain=e.speed*dt;
+      while(remain>0){
+        const tx=center(e.cx), ty=center(e.cy);
+        const ddx=tx-e.x, ddy=ty-e.y, d=Math.hypot(ddx,ddy);
+        if(d<=remain){ e.x=tx; e.y=ty; remain-=d; pickNext(e,tcx,tcy,rnd); }
+        else { e.x+=ddx/d*remain; e.y+=ddy/d*remain; remain=0; }
+      }
+    }
+
+    // ----- drawing -----
+    function drawPac(e,t){
+      const r=CELL*0.42, chomp=(Math.sin(t*9)+1)/2, m=0.03+chomp*0.30;
+      const ang=Math.atan2(e.dir[1],e.dir[0]);
+      ctx.save(); ctx.translate(e.x,e.y); ctx.rotate(ang);
+      ctx.beginPath(); ctx.moveTo(0,0);
+      ctx.arc(0,0,r, m*Math.PI, (2-m)*Math.PI); ctx.closePath();
+      ctx.fillStyle=e.color; ctx.shadowColor='rgba(255,217,59,.85)'; ctx.shadowBlur=18; ctx.fill();
+      ctx.restore();
+    }
+    function drawGhost(e){
+      const r=CELL*0.40;
+      ctx.save(); ctx.translate(e.x,e.y);
+      ctx.shadowColor=e.color; ctx.shadowBlur=14;
+      ctx.beginPath();
+      ctx.arc(0,-r*0.12,r,Math.PI,0);
+      ctx.lineTo(r, r*0.72);
+      const feet=4, span=2*r;
+      for(let i=0;i<feet;i++){
+        const x1=r - (i+0.5)*(span/feet), x2=r-(i+1)*(span/feet);
+        ctx.lineTo(x1, r*0.45); ctx.lineTo(x2, r*0.72);
+      }
+      ctx.lineTo(-r,-r*0.12); ctx.closePath();
+      ctx.fillStyle=e.color; ctx.fill(); ctx.shadowBlur=0;
+      // eyes
+      const ex=r*0.34, ey=-r*0.1, er=r*0.26;
+      for(const sx of [-ex,ex]){
+        ctx.beginPath(); ctx.fillStyle='#fff'; ctx.arc(sx,ey,er,0,7); ctx.fill();
+        ctx.beginPath(); ctx.fillStyle='#0b0b16';
+        ctx.arc(sx+e.dir[0]*er*0.4, ey+e.dir[1]*er*0.4, er*0.5,0,7); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // ----- loop -----
+    let last=performance.now();
+    function frame(now){
+      const dt=Math.min((now-last)/1000,0.05); last=now;
+      ctx.clearRect(0,0,W,H);
+
+      const tcx=cellOf(mx), tcy=cellOf(my);
+      const scatter = now<scatterUntil;
+      const cn = corners();
+
+      // pellets
+      ctx.save();
+      const pulse = 0.85 + 0.15*Math.sin(now/280);
+      for(const p of pellets){
+        const px=center(p[0]), py=center(p[1]);
+        // glow halo
+        ctx.beginPath();
+        ctx.fillStyle='rgba(31,227,255,.9)';
+        ctx.shadowColor='rgba(31,227,255,1)'; ctx.shadowBlur=22*pulse;
+        ctx.arc(px,py,4.4*pulse,0,7); ctx.fill();
+        // bright core
+        ctx.beginPath();
+        ctx.fillStyle='rgba(220,250,255,.95)';
+        ctx.shadowBlur=10*pulse;
+        ctx.arc(px,py,1.8,0,7); ctx.fill();
+      }
+      ctx.restore();
+
+      // cursor collects pellets
+      if(moved){
+        for(let i=pellets.length-1;i>=0;i--){
+          const px=center(pellets[i][0]), py=center(pellets[i][1]);
+          if(Math.hypot(px-mx,py-my) < CELL*0.55){
+            pellets.splice(i,1); score++; best=Math.max(best,score);
+            pellets.push(randCell());
+          }
+        }
+      }
+
+      // update + draw pac
+      if(scatter) move(pac, cn[0][0],cn[0][1], 0, dt);
+      else move(pac, tcx,tcy, 0.05, dt);
+      drawPac(pac, now/1000);
+
+      // ghosts
+      ghosts.forEach((g,i)=>{
+        if(scatter) move(g, cn[(i+1)%4][0], cn[(i+1)%4][1], 0, dt);
+        else move(g, tcx,tcy, 0.22, dt);
+        drawGhost(g);
+      });
+
+      // catch detection
+      if(moved && !scatter){
+        const all=[pac,...ghosts];
+        for(const e of all){
+          if(Math.hypot(e.x-mx,e.y-my) < CELL*0.55){
+            flash=1; scatterUntil=now+1300; score=0; break;
+          }
+        }
+      }
+
+      // catch flash vignette
+      if(flash>0){
+        ctx.save();
+        const g=ctx.createRadialGradient(mx,my,0,mx,my,Math.max(W,H)*0.6);
+        g.addColorStop(0,'rgba(255,46,136,'+(flash*0.28)+')');
+        g.addColorStop(1,'rgba(255,46,136,0)');
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.restore();
+        flash=Math.max(0,flash-dt*1.6);
+      }
+
+      // tiny HUD (커서 이동 후에만)
+      if(best>0){
+        ctx.save();
+        ctx.font="600 11px 'JetBrains Mono',monospace";
+        ctx.textAlign='left'; ctx.fillStyle='rgba(157,160,198,.55)';
+        const bx=(window.innerWidth>860?100:14);
+        ctx.fillText('PAC·AVOID  SCORE '+score+'   BEST '+best, bx, H-16);
+        ctx.restore();
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; moved=true; }, {passive:true});
+    window.addEventListener('mouseout', ()=>{ moved=false; mx=my=-999; });
+    window.addEventListener('resize', resize);
+    resize();
+    requestAnimationFrame(frame);
+  })();
+
+  /* =====================================================================
      DEV LOG — 여기에 글을 추가/수정하세요.
      date: 날짜  |  cat: 카테고리  |  title: 제목  |  body: 본문(HTML)
      본문에서 쓸 수 있는 태그: <p> <h4> <ul><li> <strong> <code> <pre><code>
@@ -646,6 +957,16 @@
     });
   }
   renderPosts();
+
+  /* expandable work cards */
+  document.querySelectorAll('.work-grid .card').forEach(card=>{
+    const toggle=()=>{
+      const open=card.classList.toggle('open');
+      card.setAttribute('aria-expanded', open);
+    };
+    card.addEventListener('click', toggle);
+    card.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();} });
+  });
 
   /* scroll-spy */
   const ids = ['intro','about','work','log','career','lab','contact'];
