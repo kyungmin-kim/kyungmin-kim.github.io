@@ -346,7 +346,7 @@
       <div>
         <p class="about-lead"><span class="hi">테크니컬 아티스트 김경민입니다.</span></p><br>
           아티스트이자 엔지니어로서, 보이는 결과물과 보이지 않는 시스템을 동시에 책임져 왔습니다.</p>
-        <p class="about-body">언리얼과 후디니 기반 절차적생성 파이프라인 및 최적화 툴, 스튜디오 파이프라인등을 개발하였습니다.
+        <p class="about-body">언리얼엔진 기반 절차적생성 파이프라인 및 최적화 툴, 스튜디오 파이프라인등을 개발하였습니다.
           현재는 Technical FX Artist로 실시간 VFX와 다양한 아트 피처를 다룹니다. 아트 디렉션을 만족시키면서
           렌더·프레임 예산 안에 들어오게 만드는 것 — 아트와 엔지니어링 사이를 번역하는 게 제 역할입니다.</p>
       </div>
@@ -405,7 +405,7 @@
         <div class="idx">/ 03 · Netflix Animation · Animal Logic</div>
         <h3>The LEGO Movie 시리즈</h3>
         <p>포인트 기반 군중 시뮬레이션 R&amp;D, 레고 콘셉트를 위한 유체 시뮬레이션의 픽셀화 툴,
-          레고 블록용 파괴 시뮬레이션 툴 셋업. <span style="color:var(--muted)">Warner Bros.</span></p>
+          레고 블록용 파괴 시뮬레이션 툴 셋업. 
         <div class="tags"><span class="t">Houdini</span><span class="t m">Crowd Sim</span><span class="t">Fluid</span><span class="t">Destruction</span></div>
         <div class="card-detail"><div class="inner"><div class="card-detail-c">
           <figure class="card-shot"><span class="shot-ph">The LEGO Movie</span>
@@ -423,7 +423,7 @@
         <div class="idx">/ 04 · Flying Bark</div>
         <h3>Marvel's What If…?</h3>
         <p>FX 팀 리드 &amp; TD. Houdini 시뮬레이션을 2D 스타일로 변환하는 디지털에셋을 제작·배포하고,
-          라이팅 TD와 USD 파이프라인 데이터 공유를 표준화했다. <span style="color:var(--muted)">Disney+ / Marvel</span></p>
+          라이팅 TD와 USD 파이프라인 데이터 공유를 표준화했다.
         <div class="tags"><span class="t">Houdini</span><span class="t m">2D Stylize</span><span class="t">USD</span><span class="t budget">Team Lead</span></div>
         <div class="card-detail"><div class="inner"><div class="card-detail-c">
           <figure class="card-shot"><span class="shot-ph">Marvel's What If…?</span>
@@ -440,8 +440,7 @@
         <span class="card-chev">&#9656;</span>
         <div class="idx">/ 05 · Luma Pictures</div>
         <h3>Spider-Man: Far From Home</h3>
-        <p>베니스·미스테리오 랩 시퀀스 FX 샷 작업. 아트 디렉션이 가능한 거미줄 FX-rig를 만들고,
-          Molten Man의 흐르는 용암 캐릭터 FX를 셋업. <span style="color:var(--muted)">Sony / Marvel</span></p>
+        <p>베니스·미스테리오 랩 시퀀스 FX 샷 작업. 아트 디렉션이 가능한 거미줄 FX-rig 제작.
         <div class="tags"><span class="t">FX-rig</span><span class="t m">Character FX</span><span class="t">Simulation</span><span class="t">VFX Shot</span></div>
         <div class="card-detail"><div class="inner"><div class="card-detail-c">
           <figure class="card-shot"><span class="shot-ph">Spider-Man: Far From Home</span>
@@ -450,7 +449,6 @@
           <ul>
             <li>베니스·미스테리오 랩 <strong>시퀀스 FX 샷</strong> 작업</li>
             <li>아트 디렉션이 가능한 <strong>거미줄 FX-rig</strong> 개발</li>
-            <li>Molten Man <strong>흐르는 용암 캐릭터 FX</strong> 셋업</li>
           </ul>
         </div></div></div>
       </article>
@@ -649,7 +647,9 @@
     function drawStatic(){ ctx.clearRect(0,0,W,H); drawPlane(1); drawPlane(-1); }
 
     window.addEventListener('resize', ()=>{ resize(); if(reduceMo) drawStatic(); });
+    function clampW(v,a,b){ return Math.max(a,Math.min(b,v)); }
     if(!reduceMo){
+      let touching=false, baseG=null, baseB=null, lastScroll=window.scrollY||0;
       window.addEventListener('mousemove', e=>{
         mxN = e.clientX/W - 0.5;   // -0.5 ~ 0.5
         myN = e.clientY/H - 0.5;
@@ -657,8 +657,23 @@
       window.addEventListener('wheel', e=>{
         wheel = clampW(wheel + e.deltaY*0.12, -140, 140); // 스크롤 방향으로 밀림(2x)
       }, {passive:true});
+      // 모바일: 페이지 스크롤도 그리드 전진에 반영(데스크톱 휠과 동등)
+      window.addEventListener('scroll', ()=>{
+        const y=window.scrollY||0; wheel=clampW(wheel+(y-lastScroll)*0.5,-140,140); lastScroll=y;
+      }, {passive:true});
+      // 모바일: 터치 드래그로 패럴랙스(권한 불필요, 항상 동작)
+      const touch=t=>{ if(t){ mxN=t.clientX/W-0.5; myN=t.clientY/H-0.5; } };
+      window.addEventListener('touchstart', e=>{ touching=true; baseG=null; baseB=null; touch(e.touches[0]); }, {passive:true});
+      window.addEventListener('touchmove',  e=>{ touch(e.touches[0]); }, {passive:true});
+      window.addEventListener('touchend',   ()=>{ touching=false; }, {passive:true});
+      // 모바일: 자이로(기기 기울기) — 터치 중이 아닐 때만 적용
+      window.addEventListener('deviceorientation', e=>{
+        if(e.gamma==null || touching) return;
+        if(baseG==null){ baseG=e.gamma; baseB=e.beta; }
+        mxN = clampW((e.gamma-baseG)/40, -0.5, 0.5);
+        myN = clampW((e.beta -baseB)/40, -0.5, 0.5);
+      }, {passive:true});
     }
-    function clampW(v,a,b){ return Math.max(a,Math.min(b,v)); }
     resize();
     if(reduceMo) drawStatic();
     else requestAnimationFrame(frame);
@@ -816,9 +831,32 @@
       requestAnimationFrame(frame);
     }
 
-    window.addEventListener('mousemove', e=>{ mxN=e.clientX/W-0.5; moved=true; }, {passive:true});
+    // 조향 입력: 화면 가로 위치 → 레인(좌/우)
+    let touching=false, baseG=null;
+    const steer=x=>{ mxN=clamp(x/W-0.5,-0.5,0.5); moved=true; };
+    window.addEventListener('mousemove', e=>steer(e.clientX), {passive:true});
     window.addEventListener('mouseout', ()=>{ moved=false; });
     window.addEventListener('resize', resize);
+
+    // 모바일: 터치 드래그 = 기본 조작(권한 불필요, 항상 동작)
+    window.addEventListener('touchstart', e=>{
+      touching=true; baseG=null;
+      if(e.touches[0]) steer(e.touches[0].clientX);
+      // iOS 13+ 자이로 권한 요청(탭 제스처 필요)
+      const DOE=window.DeviceOrientationEvent;
+      if(DOE && typeof DOE.requestPermission==='function') DOE.requestPermission().catch(()=>{});
+    }, {passive:true});
+    window.addEventListener('touchmove', e=>{ if(e.touches[0]) steer(e.touches[0].clientX); }, {passive:true});
+    window.addEventListener('touchend',  ()=>{ touching=false; }, {passive:true});
+
+    // 모바일: 자이로(좌우 기울기 gamma) — 터치 중이 아닐 때만 적용
+    window.addEventListener('deviceorientation', e=>{
+      if(e.gamma==null || touching) return;
+      if(baseG==null) baseG=e.gamma;
+      mxN = clamp((e.gamma-baseG)/35, -0.6, 0.6);  // ±35° → 최대 조향
+      moved=true;
+    }, {passive:true});
+
     resize();
     requestAnimationFrame(frame);
   })();
