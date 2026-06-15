@@ -102,7 +102,7 @@
   .wrap > #work{order:3}
   .wrap > #log{order:4}
   .wrap > #lab{order:5}
-  .wrap > #contact{order:6}
+  .wrap > #toolkit{order:6}
   .wrap > #arcade{order:7}
   .section{padding:130px 7vw;max-width:calc(var(--maxw) + 14vw);margin:0 auto;scroll-margin-top:10px}
   .eyebrow{font-family:'JetBrains Mono';font-size:12px;letter-spacing:3px;color:var(--magenta);
@@ -254,6 +254,32 @@
   .lab h4{font-family:'Chakra Petch';font-weight:600;font-size:17px;margin-bottom:8px}
   .lab p{color:var(--ink-dim);font-size:13.5px}
 
+  /* ===== ABOUT CONTACT ROW ===== */
+  .about-contact{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+
+  /* ===== TOOLKIT ===== */
+  .toolkit-head{margin-bottom:40px}
+  .toolkit-head h2{font-family:'Chakra Petch';font-weight:700;font-size:clamp(26px,3.5vw,42px);
+    letter-spacing:-.3px;line-height:1.1;margin-bottom:12px}
+  .toolkit-head h2 .neon{color:var(--cyan);text-shadow:0 0 18px var(--glow-c)}
+  .toolkit-head p{color:var(--ink-dim);font-size:15px;max-width:560px}
+  .dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .dl-card{background:var(--panel-hi);border:1px solid var(--line);border-radius:12px;
+    padding:22px;display:flex;flex-direction:column;gap:10px;transition:.28s}
+  .dl-card:hover{border-color:var(--cyan);box-shadow:0 0 26px rgba(31,227,255,.18);transform:translateY(-3px)}
+  .dl-meta{display:flex;align-items:center;gap:8px}
+  .dl-type{font-family:'JetBrains Mono';font-size:9.5px;font-weight:700;letter-spacing:2px;
+    text-transform:uppercase;color:var(--void);background:var(--cyan);border-radius:4px;padding:2px 7px}
+  .dl-type.hda{background:var(--magenta)}
+  .dl-type.asset{background:var(--violet)}
+  .dl-type.script{background:var(--green);color:#060e08}
+  .dl-ver{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);letter-spacing:1px}
+  .dl-card h4{font-family:'Chakra Petch';font-weight:600;font-size:17px;line-height:1.3}
+  .dl-card p{color:var(--ink-dim);font-size:13.5px;flex:1}
+  .dl-card .btn{margin-top:6px;font-size:12px;padding:9px 16px;align-self:flex-start}
+  @media(max-width:860px){.dl-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.dl-grid{grid-template-columns:1fr}}
+
   /* ===== CONTACT ===== */
   .contact{text-align:center;padding-bottom:120px}
   .contact h2{font-family:'Chakra Petch';font-weight:700;font-size:clamp(30px,5vw,58px);letter-spacing:-.5px;line-height:1.08;margin-bottom:18px}
@@ -346,7 +372,7 @@
     <a class="nlink" href="#work"><span class="num">03</span><span class="dot"></span><span class="lbl">Work</span></a>
     <a class="nlink" href="#log"><span class="num">04</span><span class="dot"></span><span class="lbl">Log</span></a>
     <a class="nlink" href="#lab"><span class="num">05</span><span class="dot"></span><span class="lbl">Lab</span></a>
-    <a class="nlink" href="#contact"><span class="num">06</span><span class="dot"></span><span class="lbl">Link</span></a>
+    <a class="nlink" href="#toolkit"><span class="num">06</span><span class="dot"></span><span class="lbl">Library</span></a>
     <a class="nlink" href="#arcade"><span class="num">07</span><span class="dot"></span><span class="lbl">Play</span></a>
   </div>
   <div class="hud">
@@ -368,13 +394,13 @@
         <span class="chip"><b>FILM</b> × <b>GAMES</b></span>
       </div>
       <h1 class="title">게임 엔진 안에서<br><span class="neon">아트</span>와 <span class="mag">퍼포먼스</span>를 잇습니다</h1>
-      <p class="lead">언리얼 머티리얼, 실시간 VFX, 절차적 생성 툴 —
-        아티스트가 원하는 룩을 <code>real-time / frame budget</code> 안에 담아냅니다.
-        반복은 자동화하고 파이프라인은 더 빠르게, 아트와 엔지니어링 사이를
-        효율적으로 잇는 게 제 일입니다.</p>
+      <p class="lead">언리얼 엔진 기반 절차적 생성·스튜디오 파이프라인과 최적화 툴을 개발해 왔습니다.
+        현재는 <code>Technical FX Artist</code>로서 고품질 Realtime VFX, 새로운 아트 피처,
+        그리고 아티스트를 위한 자동화·최적화 검사 툴을 다룹니다.
+        아트 디렉션과 렌더·프레임 예산 사이 — 아트와 엔지니어링을 번역하는 게 제 역할입니다.</p>
       <div class="cta-row">
         <a class="btn prime" href="#work">작업 보기 →</a>
-        <a class="btn ghost" href="#contact">연락하기</a>
+        <a class="btn ghost" href="#about">연락하기</a>
       </div>
     </div>
   </header>
@@ -399,6 +425,13 @@
         <div class="cell"><div class="k">DevOps</div><div class="vv">GitHub · AWS · Docker</div></div>
       </div>
     </div>
+    <div class="about-contact">
+      <button class="btn prime" id="copyBtn">이메일 복사</button>
+      <a class="btn ghost" href="https://www.linkedin.com/in/kyungmin-kim-7586a9a4/" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="btn ghost" href="https://github.com/kyungmin-kim" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn ghost" href="#" target="_blank" rel="noopener">Showreel</a>
+    </div>
+    <div class="copied" id="copied"></div>
   </section>
 
   <!-- WORK -->
@@ -552,18 +585,24 @@
     </div>
   </section>
 
-  <!-- CONTACT -->
-  <section class="section contact reveal" id="contact">
-    <div class="eyebrow" style="justify-content:center">06 — Link</div>
-    <h2>다음 프레임,<br><span class="neon">같이 만들까요?</span></h2>
-    <p>VFX, 셰이더, 파이프라인 — 게임을 더 잘 빛나게 할 일이라면 언제든 환영입니다.</p>
-    <div class="links">
-      <button class="btn prime" id="copyBtn">이메일 복사</button>
-      <a class="btn ghost" href="https://www.linkedin.com/in/kyungmin-kim-7586a9a4/" target="_blank" rel="noopener">LinkedIn</a>
-      <a class="btn ghost" href="https://github.com/kyungmin-kim" target="_blank" rel="noopener">GitHub</a>
-      <a class="btn ghost" href="#" target="_blank" rel="noopener">Showreel</a>
+  <!-- TOOLKIT -->
+  <section class="section reveal" id="toolkit">
+    <div class="eyebrow">06 — Toolkit</div>
+    <div class="toolkit-head">
+      <h2>공개 <span class="neon">라이브러리</span></h2>
+      <p style="white-space:nowrap">파이프라인·툴·HDA·셰이더를 공유합니다. 모든 자료는 <code>MIT License</code> 하에 공개됩니다 — 상업적 이용·수정·재배포 모두 허용.</p>
     </div>
-    <div class="copied" id="copied"></div>
+    <div class="dl-grid">
+
+      <div class="dl-card">
+        <div class="dl-meta"><span class="dl-type script">Script</span><span class="dl-ver">v1.0</span></div>
+        <h4>UE Asset Renamer</h4>
+        <p>언리얼 에디터 내에서 에셋을 일괄 이름 변경하는 Python 자동화 툴. 네이밍 컨벤션 적용·프리뷰 지원.</p>
+        <div class="tags"><span class="t">Python</span><span class="t m">UE5 Editor</span></div>
+        <a class="btn prime" href="#" target="_blank" rel="noopener">↓ Download</a>
+      </div>
+
+    </div>
   </section>
 
   <!-- ARCADE (playable, swappable cartridges) -->
@@ -599,7 +638,7 @@
 
 <nav class="mnav" aria-label="섹션 네비게이션">
   <a href="#intro">00</a><a href="#about">01</a><a href="#career">02</a><a href="#work">03</a>
-  <a href="#log">04</a><a href="#lab">05</a><a href="#contact">06</a><a href="#arcade">07</a>
+  <a href="#log">04</a><a href="#lab">05</a><a href="#toolkit">06</a><a href="#arcade">07</a>
 </nav>
 
 <script>
@@ -783,14 +822,14 @@
 
     function drawPellet(o){
       const p=project(o.x,o.z,42); if(p.s<=0) return;
-      const r=Math.max(1,16*p.s), fade=clamp(1-o.z/FAR,0,1);
+      const r=Math.max(1,11.2*p.s), fade=clamp(1-o.z/FAR,0,1);
       ctx.save();
       ctx.beginPath();
-      ctx.fillStyle='rgba(31,227,255,'+(0.5+0.45*fade)+')';
-      ctx.shadowColor='rgba(31,227,255,1)'; ctx.shadowBlur=Math.min(28,r*1.6);
+      ctx.fillStyle='rgba(255,217,59,'+(0.5+0.45*fade)+')';
+      ctx.shadowColor='rgba(255,217,59,1)'; ctx.shadowBlur=Math.min(28,r*1.6);
       ctx.arc(p.sx,p.sy,r,0,7); ctx.fill();
       ctx.beginPath();
-      ctx.fillStyle='rgba(220,250,255,.95)'; ctx.shadowBlur=r*0.7;
+      ctx.fillStyle='rgba(255,245,180,.95)'; ctx.shadowBlur=r*0.7;
       ctx.arc(p.sx,p.sy,r*0.4,0,7); ctx.fill();
       ctx.restore();
     }
@@ -822,21 +861,12 @@
     // 1인칭 조준 크로스헤어 — 다가오는 오브젝트가 수렴하는 지점
     function drawReticle(now){
       const sHit=FOV/ZHIT, ry=horizon+(CAM_H-42)*sHit;
-      const R=22+chomp*4, gap=7;
+      const R=22+chomp*4;
       ctx.save(); ctx.translate(W/2, ry);
-      ctx.lineCap='round';
       ctx.strokeStyle='rgba(31,227,255,'+(0.21+0.1*chomp).toFixed(3)+')';
       ctx.shadowColor='rgba(31,227,255,.27)'; ctx.shadowBlur=8+chomp*16;
-      // 십자 눈금(중앙 갭)
-      ctx.lineWidth=2.2;
-      ctx.beginPath();
-      ctx.moveTo(0,-gap); ctx.lineTo(0,-R); ctx.moveTo(0,gap); ctx.lineTo(0,R);
-      ctx.moveTo(-gap,0); ctx.lineTo(-R,0); ctx.moveTo(gap,0); ctx.lineTo(R,0);
-      ctx.stroke();
-      // 조준 링
       ctx.lineWidth=1.4;
       ctx.beginPath(); ctx.arc(0,0,R*0.52,0,7); ctx.stroke();
-      // 중심 점
       ctx.beginPath(); ctx.fillStyle='rgba(220,250,255,'+(0.28+0.12*chomp).toFixed(3)+')';
       ctx.shadowBlur=6; ctx.arc(0,0,2,0,7); ctx.fill();
       ctx.restore();
@@ -987,7 +1017,7 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
   });
 
   /* scroll-spy */
-  const ids = ['intro','about','career','work','log','lab','contact','arcade'];
+  const ids = ['intro','about','career','work','log','lab','toolkit','arcade'];
   const links = [...document.querySelectorAll('.rail .nlink')];
   const mlinks = [...document.querySelectorAll('.mnav a')];
   const setActive = (id)=>{
@@ -1041,6 +1071,7 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
     window.addEventListener('resize', sync);
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(sync); // 웹폰트 로드 후 재측정
   })();
+
 </script>
 
 <script>
@@ -1185,7 +1216,7 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
       const DEATH_T=0.95;       // 죽는 모션 길이(초)
       const ITEM_PROB=0.09;     // 스폰 시 아이템일 확률
       const GC=['#FF2E88','#8B6CFF','#1FE3FF'];
-      let px=0,objs=[],spawnT=0,t=0,f=1,horizon=0,cx=0,Wc=0,dying=false,dyingT=0,slowMul=1,clearFx=0,gridOff=0;
+      let px=0,objs=[],spawnT=0,t=0,f=1,horizon=0,cx=0,Wc=0,dying=false,dyingT=0,slowMul=1,clearFx=0,gridOff=0,chomp=0;
       const fit=(w,h)=>{ f=h/600; horizon=h*0.44; cx=w/2; Wc=w; };
       const proj=(x,z,hh)=>({sx:cx+(x-px)*FOV/z*f, sy:horizon+(CAMH-hh)*FOV/z*f, s:FOV/z*f});
       const speedMul=()=>Math.pow(1.001, t);     // 1초당 +0.1% 가속(복리)
@@ -1199,8 +1230,8 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
       const reticleY=()=>horizon+(CAMH-42)*(FOV/ZHIT*f);
       return { id:'pac-run', name:'PAC·RUN', desc:'레인 러너 · 점점 빨라짐 · 아이템 활용', hint:'← → · 드래그',
         init(api,w,h){ fit(w,h); this.reset(); }, resize(w,h){ fit(w,h); },
-        reset(){ px=0; objs=[]; spawnT=0; t=0; dying=false; dyingT=0; slowMul=1; clearFx=0; gridOff=0; },
-        update(dt,input,api){ t+=dt; if(clearFx>0) clearFx=Math.max(0,clearFx-dt*2);
+        reset(){ px=0; objs=[]; spawnT=0; t=0; dying=false; dyingT=0; slowMul=1; clearFx=0; gridOff=0; chomp=0; },
+        update(dt,input,api){ t+=dt; if(clearFx>0) clearFx=Math.max(0,clearFx-dt*2); if(chomp>0) chomp=Math.max(0,chomp-dt*4);
           if(dying){ dyingT+=dt; if(dyingT>=DEATH_T) api.gameOver('GHOST HIT'); return; }
           const spd=APPROACH*speedMul()*slowMul;
           const tx=Math.max(-1,Math.min(1,input.x))*LANE; px+=(tx-px)*Math.min(1,dt*6);
@@ -1213,7 +1244,7 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
             else if(o.kind){ if(d<eatW){ o.dead=true; api.addScore(2);
               if(o.kind==='slow'){ slowMul=Math.max(0.75, slowMul/1.5); }
               else { objs.forEach(x=>{ if(x.g) x.dead=true; }); clearFx=1; } } }
-            else if(d<eatW){ api.addScore(1); o.dead=true; } } }
+            else if(d<eatW){ api.addScore(1); o.dead=true; chomp=1; } } }
           objs=objs.filter(o=>o.z>ZNEAR&&!o.dead);
         },
         render(g,api){ const w=api.W,h=api.H;
@@ -1238,10 +1269,10 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
                 g.beginPath(); g.arc(0,0,r,0,7); g.stroke();
                 g.beginPath(); g.moveTo(-r*0.5,-r*0.5); g.lineTo(r*0.5,r*0.5); g.moveTo(r*0.5,-r*0.5); g.lineTo(-r*0.5,r*0.5); g.stroke(); }
               g.restore(); }
-            else { const p=proj(o.x,o.z,42), r=Math.max(1,16*p.s);
-              g.beginPath(); g.fillStyle='rgba(31,227,255,.9)'; g.shadowColor='rgba(31,227,255,1)'; g.shadowBlur=Math.min(24,r*1.5);
+            else { const p=proj(o.x,o.z,42), r=Math.max(1,11.2*p.s);
+              g.beginPath(); g.fillStyle='rgba(255,217,59,.9)'; g.shadowColor='rgba(255,217,59,1)'; g.shadowBlur=Math.min(24,r*1.5);
               g.arc(p.sx,p.sy,r,0,7); g.fill();
-              g.beginPath(); g.fillStyle='rgba(220,250,255,.95)'; g.shadowBlur=r*0.7; g.arc(p.sx,p.sy,r*0.4,0,7); g.fill(); g.shadowBlur=0; } });
+              g.beginPath(); g.fillStyle='rgba(255,245,180,.95)'; g.shadowBlur=r*0.7; g.arc(p.sx,p.sy,r*0.4,0,7); g.fill(); g.shadowBlur=0; } });
           // 고스트 제거 아이템 플래시
           if(clearFx>0){ g.save(); const gr=g.createRadialGradient(w/2,horizon,0,w/2,horizon,Math.max(w,h)*0.7);
             gr.addColorStop(0,'rgba(255,46,136,'+(clearFx*0.3).toFixed(3)+')'); gr.addColorStop(1,'rgba(255,46,136,0)');
@@ -1257,9 +1288,14 @@ unreal.<span class="n">register_slate_post_tick_callback</span>(<span class="k">
             g.strokeStyle='rgba(255,120,40,'+(a*0.6).toFixed(3)+')'; g.lineWidth=2; g.stroke();
             g.restore();
           } else {
+            if(chomp>0){ g.save();
+              const gr=g.createRadialGradient(w/2,ry,0,w/2,ry,rr*(2+chomp*3));
+              gr.addColorStop(0,'rgba(255,217,59,'+(chomp*0.5).toFixed(3)+')');
+              gr.addColorStop(1,'rgba(255,217,59,0)');
+              g.fillStyle=gr; g.fillRect(0,0,w,h); g.restore(); }
             const m=0.06+((Math.sin(t*8)+1)/2)*0.3;
             g.beginPath(); g.moveTo(w/2,ry); g.arc(w/2,ry,rr,mc+m*Math.PI,mc+(2-m)*Math.PI); g.closePath();
-            g.lineWidth=2.4; g.strokeStyle='rgba(255,217,59,.92)'; g.shadowColor='rgba(255,200,60,.9)'; g.shadowBlur=10; g.stroke(); g.shadowBlur=0;
+            g.lineWidth=2.4; g.strokeStyle='rgba(255,217,59,.92)'; g.shadowColor='rgba(255,200,60,.9)'; g.shadowBlur=10+chomp*30; g.stroke(); g.shadowBlur=0;
           }
         } };
     }
