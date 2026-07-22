@@ -406,11 +406,13 @@
       if (raw) {
         const parsed = JSON.parse(raw);
         if (!parsed.quarterTodos) parsed.quarterTodos = {};
+        const inbox = parsed.projects && parsed.projects.find(p => p.id === "inbox");
+        if (inbox) inbox.name = "전체";
         return parsed;
       }
     } catch (e) { console.warn("state load failed", e); }
     return {
-      projects: [{ id: "inbox", name: "Inbox", color: "#767676" }],
+      projects: [{ id: "inbox", name: "전체", color: "#767676" }],
       tasks: [],
       quarterTodos: {}
     };
@@ -536,6 +538,7 @@
     return state.tasks.filter(t => !t.completed && matchesFilter(t, { type, projectId: null })).length;
   }
   function countForProject(pid) {
+    if (pid === "inbox") return state.tasks.filter(t => !t.completed).length;
     return state.tasks.filter(t => !t.completed && t.projectId === pid).length;
   }
 
@@ -607,7 +610,7 @@
 
   // ---------- Filtering ----------
   function matchesFilter(t, filter) {
-    if (filter.type === "project") return t.projectId === filter.projectId;
+    if (filter.type === "project") return filter.projectId === "inbox" || t.projectId === filter.projectId;
     if (filter.type === "all") return true;
     if (!t.dueDate) return filter.type === "all";
     if (filter.type === "today") return t.dueDate === todayStr();
