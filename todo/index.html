@@ -258,6 +258,15 @@
   #overlay.show { display: flex; }
   #modal { background: var(--panel); border-radius: 10px; width: 760px; max-width: 95vw; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
   #modal h2 { margin: 0 0 14px; font-size: 16px; }
+  #syncOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: center; justify-content: center; z-index: 150; }
+  #syncOverlay.show { display: flex; }
+  #syncModal { background: var(--panel); border-radius: 10px; width: 440px; max-width: 92vw; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+  #syncModal h2 { margin: 0 0 10px; font-size: 16px; }
+  .sync-help { font-size: 12px; color: var(--text-dim); line-height: 1.5; margin: 0 0 14px; }
+  .sync-modal-status { font-size: 12.5px; color: var(--text-dim); margin: 4px 0 10px; min-height: 16px; }
+  .sync-modal-status.error { color: var(--overdue); }
+  .sync-modal-status.ok { color: var(--today); }
+  .sync-status { font-size: 13px; margin-right: 2px; }
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; font-weight: 600; }
   .field input, .field select, .field textarea {
@@ -350,6 +359,8 @@
         <button data-view="list" class="active">리스트</button>
         <button data-view="week">주간</button>
       </div>
+      <span id="syncStatus" class="sync-status" title="GitHub 동기화 상태"></span>
+      <button class="btn-secondary" id="syncSettingsBtn" title="GitHub 동기화 설정">🔗 동기화</button>
       <button class="btn-primary" id="newTaskBtn">＋ 할 일 추가</button>
     </div>
     <div id="ganttPanel">
@@ -463,10 +474,183 @@
   </div>
 </div>
 
+<div id="syncOverlay">
+  <div id="syncModal">
+    <h2>GitHub 동기화 설정</h2>
+    <p class="sync-help">
+      할 일 데이터를 GitHub 저장소의 JSON 파일에 저장해서 다른 컴퓨터와 동기화합니다.
+      저장소의 Contents 읽기/쓰기 권한만 있는 fine-grained 토큰을 발급해서 사용하세요.
+      토큰은 이 브라우저에만 저장됩니다.
+    </p>
+    <div class="field">
+      <label>GitHub 사용자/조직 (owner)</label>
+      <input type="text" id="sync-owner" placeholder="예: kyungmin-kim" autocomplete="off" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>저장소 이름</label>
+        <input type="text" id="sync-repo" placeholder="예: todo-data" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>브랜치</label>
+        <input type="text" id="sync-branch" placeholder="main" autocomplete="off" />
+      </div>
+    </div>
+    <div class="field">
+      <label>파일 경로</label>
+      <input type="text" id="sync-path" placeholder="data.json" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label>Personal Access Token</label>
+      <input type="password" id="sync-token" placeholder="github_pat_..." autocomplete="off" />
+    </div>
+    <div class="sync-modal-status" id="syncModalStatus"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-danger" id="syncDisconnectBtn">연결 해제</button>
+      <div style="flex:1"></div>
+      <button type="button" class="btn-secondary" id="syncCloseBtn">닫기</button>
+      <button type="button" class="btn-primary" id="syncSaveBtn">저장하고 동기화</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   "use strict";
   const STORAGE_KEY = "schedule_app_data_v1";
+  const SYNC_KEY = "schedule_app_github_sync_v1";
+
+  // ---------- GitHub sync (repo file as shared data store) ----------
+  function loadSyncConfig() {
+    try {
+      const raw = localStorage.getItem(SYNC_KEY);
+      if (!raw) return null;
+      const cfg = JSON.parse(raw);
+      if (!cfg.owner || !cfg.repo || !cfg.token) return null;
+      cfg.path = cfg.path || "data.json";
+      cfg.branch = cfg.branch || "main";
+      return cfg;
+    } catch (e) { return null; }
+  }
+  function saveSyncConfig(cfg) { localStorage.setItem(SYNC_KEY, JSON.stringify(cfg)); }
+  function clearSyncConfig() { localStorage.removeItem(SYNC_KEY); }
+
+  function b64EncodeUtf8(str) { return btoa(unescape(encodeURIComponent(str))); }
+  function b64DecodeUtf8(str) { return decodeURIComponent(escape(atob(str))); }
+
+  function ghApiHeaders(token) {
+    return {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28"
+    };
+  }
+  function ghContentsUrl(cfg) {
+    const encodedPath = cfg.path.split("/").map(encodeURIComponent).join("/");
+    return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${encodedPath}`;
+  }
+
+  async function ghGetFile(cfg) {
+    const res = await fetch(`${ghContentsUrl(cfg)}?ref=${encodeURIComponent(cfg.branch)}`, { headers: ghApiHeaders(cfg.token) });
+    if (res.status === 404) return { exists: false, content: null, sha: null };
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const err = new Error(body.message || `GitHub 읽기 실패 (${res.status})`);
+      err.status = res.status;
+      throw err;
+    }
+    const data = await res.json();
+    const content = b64DecodeUtf8(data.content.replace(/\n/g, ""));
+    return { exists: true, content, sha: data.sha };
+  }
+
+  async function ghPutFile(cfg, contentStr, sha) {
+    const body = { message: `sync: update ${cfg.path}`, content: b64EncodeUtf8(contentStr), branch: cfg.branch };
+    if (sha) body.sha = sha;
+    const res = await fetch(ghContentsUrl(cfg), {
+      method: "PUT",
+      headers: { ...ghApiHeaders(cfg.token), "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      const err = new Error(errBody.message || `GitHub 저장 실패 (${res.status})`);
+      err.status = res.status;
+      throw err;
+    }
+    const data = await res.json();
+    return data.content.sha;
+  }
+
+  let ghFileSha = null;
+  let syncTimer = null;
+  let syncing = false;
+
+  function setSyncStatus(text, cls) {
+    const el = document.getElementById("syncStatus");
+    if (!el) return;
+    el.textContent = text;
+    el.className = "sync-status" + (cls ? " " + cls : "");
+  }
+
+  async function pullFromGithub(cfg) {
+    setSyncStatus("⏳", "");
+    try {
+      const result = await ghGetFile(cfg);
+      if (result.exists) {
+        const parsed = JSON.parse(result.content);
+        if (!parsed.quarterTodos) parsed.quarterTodos = {};
+        const inbox = parsed.projects && parsed.projects.find(p => p.id === "inbox");
+        if (inbox) inbox.name = "전체";
+        state = parsed;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        ghFileSha = result.sha;
+      } else {
+        ghFileSha = null;
+      }
+      setSyncStatus("☁️", "");
+      return { ok: true };
+    } catch (e) {
+      console.warn("github pull failed", e);
+      setSyncStatus("⚠️", "error");
+      return { ok: false, error: e };
+    }
+  }
+
+  async function pushToGithub() {
+    const cfg = loadSyncConfig();
+    if (!cfg) return;
+    if (syncing) { scheduleSync(); return; }
+    syncing = true;
+    setSyncStatus("⏳", "");
+    try {
+      ghFileSha = await ghPutFile(cfg, JSON.stringify(state), ghFileSha);
+      setSyncStatus("☁️", "");
+    } catch (e) {
+      if (e.status === 409) {
+        try {
+          const result = await ghGetFile(cfg);
+          ghFileSha = result.sha;
+          ghFileSha = await ghPutFile(cfg, JSON.stringify(state), ghFileSha);
+          setSyncStatus("☁️", "");
+        } catch (e2) {
+          console.warn("github push retry failed", e2);
+          setSyncStatus("⚠️", "error");
+        }
+      } else {
+        console.warn("github push failed", e);
+        setSyncStatus("⚠️", "error");
+      }
+    } finally {
+      syncing = false;
+    }
+  }
+
+  function scheduleSync() {
+    if (!loadSyncConfig()) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(pushToGithub, 1200);
+  }
 
   function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
   function todayStr() {
@@ -504,7 +688,10 @@
       quarterTodos: {}
     };
   }
-  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    scheduleSync();
+  }
 
   // window.prompt/confirm are blocked inside sandboxed iframes (e.g. published artifacts),
   // so use in-page dialogs instead.
@@ -1358,6 +1545,65 @@
     if (e.key === "Escape" && overlay.classList.contains("show")) closeModal();
   });
 
+  // ---------- GitHub sync settings modal ----------
+  const syncOverlay = document.getElementById("syncOverlay");
+  function setSyncModalStatus(text, cls) {
+    const el = document.getElementById("syncModalStatus");
+    el.textContent = text || "";
+    el.className = "sync-modal-status" + (cls ? " " + cls : "");
+  }
+  function openSyncModal() {
+    const cfg = loadSyncConfig() || {};
+    document.getElementById("sync-owner").value = cfg.owner || "";
+    document.getElementById("sync-repo").value = cfg.repo || "";
+    document.getElementById("sync-branch").value = cfg.branch || "main";
+    document.getElementById("sync-path").value = cfg.path || "data.json";
+    document.getElementById("sync-token").value = cfg.token || "";
+    setSyncModalStatus("");
+    syncOverlay.classList.add("show");
+  }
+  function closeSyncModal() { syncOverlay.classList.remove("show"); }
+
+  document.getElementById("syncSettingsBtn").addEventListener("click", openSyncModal);
+  document.getElementById("syncCloseBtn").addEventListener("click", closeSyncModal);
+  syncOverlay.addEventListener("click", (e) => { if (e.target === syncOverlay) closeSyncModal(); });
+
+  document.getElementById("syncSaveBtn").addEventListener("click", async () => {
+    const cfg = {
+      owner: document.getElementById("sync-owner").value.trim(),
+      repo: document.getElementById("sync-repo").value.trim(),
+      branch: document.getElementById("sync-branch").value.trim() || "main",
+      path: document.getElementById("sync-path").value.trim() || "data.json",
+      token: document.getElementById("sync-token").value.trim()
+    };
+    if (!cfg.owner || !cfg.repo || !cfg.token) {
+      setSyncModalStatus("owner / 저장소 / 토큰은 필수예요.", "error");
+      return;
+    }
+    saveSyncConfig(cfg);
+    setSyncModalStatus("연결 확인 중...", "");
+    const result = await pullFromGithub(cfg);
+    if (!result.ok) {
+      setSyncModalStatus("연결 실패: " + result.error.message, "error");
+      return;
+    }
+    if (ghFileSha === null) {
+      // no file in repo yet: push current local state to create it
+      await pushToGithub();
+    }
+    setSyncModalStatus("동기화 완료!", "ok");
+    render();
+  });
+
+  document.getElementById("syncDisconnectBtn").addEventListener("click", async () => {
+    const ok = await showConfirm("이 브라우저에서 GitHub 동기화 연결을 해제할까요? (저장소의 데이터는 그대로 남아요)");
+    if (!ok) return;
+    clearSyncConfig();
+    ghFileSha = null;
+    setSyncStatus("", "");
+    closeSyncModal();
+  });
+
   // ---------- Render dispatch ----------
   function render() {
     document.getElementById("viewTitle").textContent = viewTitleFor();
@@ -1369,7 +1615,11 @@
     else renderWeek();
   }
 
-  render();
+  (async function init() {
+    const cfg = loadSyncConfig();
+    if (cfg) await pullFromGithub(cfg);
+    render();
+  })();
 })();
 </script>
 </body>
